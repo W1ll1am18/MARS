@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${db-url}
-    username: ${db-username}
-    password: ${db-password}
+    url: ${DB-URL}
+    username: ${DB-USERNAME}
+    password: ${DB-PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
@@ -11,3 +11,5 @@ spring:
       hibernate:
         globally_quoted_identifiers: true
         format_sql: true
+polygon:
+  api-key: ${POLYGON_API_KEY}
