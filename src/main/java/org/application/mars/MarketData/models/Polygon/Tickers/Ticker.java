@@ -3,7 +3,7 @@ package org.application.mars.MarketData.models.Polygon.Tickers;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import org.application.mars.MarketData.models.Polygon.enums.Output.Locale;
+import org.application.mars.MarketData.models.Polygon.enums.Locale;
 import org.application.mars.MarketData.models.Polygon.enums.Output.Market;
 
 @Data

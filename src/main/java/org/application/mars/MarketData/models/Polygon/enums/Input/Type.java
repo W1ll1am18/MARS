@@ -1,6 +1,6 @@
 package org.application.mars.MarketData.models.Polygon.enums.Input;
 
-//Input param for types of tickers
+//Input param for types of tickers //Note MUST STAY UPPERCASE
 public enum Type {
     CS,
     ADRC,
@@ -27,6 +27,6 @@ public enum Type {
     LT;
 
     public String getValue() {
-        return this.toString().toLowerCase();
+        return this.toString();
     }
 }
