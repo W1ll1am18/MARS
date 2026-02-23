@@ -1,7 +1,7 @@
 package org.application.mars.MarketData.service;
 
 import lombok.RequiredArgsConstructor;
-import org.application.mars.MarketData.client.PolygonClient;
+import org.application.mars.MarketData.client.MassiveClient;
 import org.application.mars.MarketData.models.Polygon.Tickers.TickerOverviewResponse;
 import org.application.mars.MarketData.models.Polygon.Tickers.TickerRelatedResponse;
 import org.application.mars.MarketData.models.Polygon.Tickers.TickerResponse;
@@ -21,7 +21,7 @@ import java.time.LocalDate;
 @Service
 @RequiredArgsConstructor
 public class TickerService {
-    private final PolygonClient polygonClient;
+    private final MassiveClient massiveClient;
 
     public TickerResponse getTickers(String ticker, Type type, Market market, String exchange, String cusip, String cik,
                                      LocalDate date, String search, Boolean active, Order order, Integer limit, Sort sort){
@@ -50,7 +50,7 @@ public class TickerService {
         if (limit != null) url.append("limit=").append(limit).append("&"); //Lowercase
         if (date != null) url.append("date=").append(date).append("&");
 
-        return polygonClient.getTickers(url.toString());
+        return massiveClient.getTickers(url.toString());
     }
 
     public TickerTypeResponse getTickerTypes(AssetClass assetClass, Locale locale) {
@@ -59,7 +59,7 @@ public class TickerService {
         if (assetClass != null) {url.append("asset_class=").append(assetClass.getValue()).append("&");} //Lowercase
         if (locale != null) {url.append("locale=").append(locale.getValue()).append("&");} //Lowercase
 
-        return polygonClient.getTickerTypes(url.toString());
+        return massiveClient.getTickerTypes(url.toString());
     }
 
     public TickerOverviewResponse getTicker(String ticker, LocalDate date) {
@@ -68,14 +68,14 @@ public class TickerService {
         if (ticker != null) {url.append(ticker.toUpperCase()).append("?");}
         if (date != null) {url.append("date=").append(date).append("&");}
 
-        return polygonClient.getTicker(url.toString());
+        return massiveClient.getTicker(url.toString());
     }
 
     public TickerRelatedResponse getRelatedCompanies(String ticker) {
         StringBuilder url = new StringBuilder();
 
         if (ticker != null) {url.append(ticker.toUpperCase()).append("?");}
-        return polygonClient.getRelatedCompanies(url.toString());
+        return massiveClient.getRelatedCompanies(url.toString());
     }
 
 }
