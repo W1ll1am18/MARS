@@ -6,6 +6,7 @@ import org.application.mars.MarketData.models.Polygon.AggregateBars.CustomBarsRe
 import org.application.mars.MarketData.models.Polygon.AggregateBars.DailyMarketSummaryResponse;
 import org.application.mars.MarketData.models.Polygon.AggregateBars.DailyTickerSummaryResponse;
 import org.application.mars.MarketData.models.Polygon.AggregateBars.PreviousDayBarResponse;
+import org.application.mars.MarketData.models.Polygon.TechnicalIndicators.SimpleMovingAverageResponse;
 import org.application.mars.MarketData.models.Polygon.Tickers.TickerOverviewResponse;
 import org.application.mars.MarketData.models.Polygon.Tickers.TickerRelatedResponse;
 import org.application.mars.MarketData.models.Polygon.Tickers.TickerResponse;
@@ -82,5 +83,10 @@ public class MassiveClient {
     public PreviousDayBarResponse getPreviousDayBar(String filtersUrl) {
         String url = "https://api.massive.com/v2/aggs/ticker/" + filtersUrl + "apiKey=" + apiKey;
         return sendRequest(url, PreviousDayBarResponse.class);
+    }
+
+    public SimpleMovingAverageResponse getSimpleMovingAverage(String filtersUrl) {
+        String url = "https://api.massive.com/v1/indicators/sma/" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, SimpleMovingAverageResponse.class);
     }
 }
