@@ -65,7 +65,7 @@ public class TickerService {
     public TickerOverviewResponse getTicker(String ticker, LocalDate date) {
         StringBuilder url = new StringBuilder();
 
-        if (ticker != null) {url.append(ticker.toUpperCase()).append("?");}
+        url.append(ticker.toUpperCase()).append("?");
         if (date != null) {url.append("date=").append(date).append("&");}
 
         return massiveClient.getTicker(url.toString());
@@ -74,7 +74,7 @@ public class TickerService {
     public TickerRelatedResponse getRelatedCompanies(String ticker) {
         StringBuilder url = new StringBuilder();
 
-        if (ticker != null) {url.append(ticker.toUpperCase()).append("?");}
+        url.append(ticker.toUpperCase()).append("?");
         return massiveClient.getRelatedCompanies(url.toString());
     }
 

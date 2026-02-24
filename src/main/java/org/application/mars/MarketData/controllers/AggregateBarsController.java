@@ -5,7 +5,6 @@ import org.application.mars.MarketData.models.Polygon.enums.Input.Order;
 import org.application.mars.MarketData.models.Polygon.enums.Input.Timespan;
 import org.application.mars.MarketData.service.AggregateBarService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -28,5 +27,31 @@ public class AggregateBarsController {
             @RequestParam(required = false, defaultValue = "5000") Integer limit
     ) {
         return ResponseEntity.ok(aggregateBarService.getCustomBars(stocksTicker, multiplier, timeSpan, from, to, adjusted, order, limit));
+    }
+
+    @GetMapping("/daily/{date}")
+    public ResponseEntity<?> getDailyMarketSummary (
+        @PathVariable LocalDate date,
+        @RequestParam(required = false, defaultValue = "true") Boolean adjusted,
+        @RequestParam(required = false, defaultValue = "true") Boolean includeOtc
+    ) {
+        return ResponseEntity.ok(aggregateBarService.getDailyMarketSummary(date, adjusted, includeOtc));
+    }
+
+    @GetMapping("/daily/{ticker}/{date}")
+    public ResponseEntity<?> getDailyTickerSummary (
+            @PathVariable String ticker,
+            @PathVariable LocalDate date,
+            @RequestParam(required = false, defaultValue = "true") Boolean adjusted
+    ) {
+        return ResponseEntity.ok(aggregateBarService.getDailyTickerSummary(ticker, date, adjusted));
+    }
+
+    @GetMapping("/prev/{ticker}")
+    public ResponseEntity<?> getPreviousDayBar (
+            @PathVariable String ticker,
+            @RequestParam(required = false, defaultValue = "true") Boolean adjusted
+    ) {
+        return ResponseEntity.ok(aggregateBarService.getPreviousDayBar(ticker, adjusted));
     }
 }

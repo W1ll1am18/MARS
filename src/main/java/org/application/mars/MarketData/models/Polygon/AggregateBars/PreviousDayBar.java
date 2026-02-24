@@ -5,14 +5,13 @@ import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CustomBars {
-    private Long c;
-    private Long h;
-    private Long l;
-    private Long n;
-    private Long o;
-    private Long otc;
+public class PreviousDayBar {
+    private Double c;
+    private Double h;
+    private Double l;
+    private Integer n;
+    private Double o;
     private Long t;
-    private Long v;
-    private Long vw;
+    private Double v;
+    private Double vw;
 }

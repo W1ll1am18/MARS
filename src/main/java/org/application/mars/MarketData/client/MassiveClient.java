@@ -3,6 +3,9 @@ package org.application.mars.MarketData.client;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.application.mars.MarketData.models.Polygon.AggregateBars.CustomBarsResponse;
+import org.application.mars.MarketData.models.Polygon.AggregateBars.DailyMarketSummaryResponse;
+import org.application.mars.MarketData.models.Polygon.AggregateBars.DailyTickerSummaryResponse;
+import org.application.mars.MarketData.models.Polygon.AggregateBars.PreviousDayBarResponse;
 import org.application.mars.MarketData.models.Polygon.Tickers.TickerOverviewResponse;
 import org.application.mars.MarketData.models.Polygon.Tickers.TickerRelatedResponse;
 import org.application.mars.MarketData.models.Polygon.Tickers.TickerResponse;
@@ -64,5 +67,20 @@ public class MassiveClient {
     public CustomBarsResponse getCustomBars(String filtersUrl) {
         String url = "https://api.massive.com/v2/aggs/" + filtersUrl + "apiKey=" + apiKey;
         return sendRequest(url, CustomBarsResponse.class);
+    }
+
+    public DailyMarketSummaryResponse getDailyMarketSummary(String filtersUrl) {
+        String url = "https://api.massive.com/v2/aggs/grouped/locale/us/market/stocks/" + filtersUrl + "apiKey=" +  apiKey;
+        return sendRequest(url, DailyMarketSummaryResponse.class);
+    }
+
+    public DailyTickerSummaryResponse getDailyTickerSummary(String filtersUrl) {
+        String url = "https://api.massive.com/v1/open-close/" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, DailyTickerSummaryResponse.class);
+    }
+
+    public PreviousDayBarResponse getPreviousDayBar(String filtersUrl) {
+        String url = "https://api.massive.com/v2/aggs/ticker/" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, PreviousDayBarResponse.class);
     }
 }
