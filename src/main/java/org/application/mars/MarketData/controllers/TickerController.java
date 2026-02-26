@@ -1,12 +1,12 @@
 package org.application.mars.MarketData.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.application.mars.MarketData.models.Polygon.enums.Input.Market;
-import org.application.mars.MarketData.models.Polygon.enums.Input.Order;
-import org.application.mars.MarketData.models.Polygon.enums.Input.Sort;
-import org.application.mars.MarketData.models.Polygon.enums.Input.Type;
-import org.application.mars.MarketData.models.Polygon.enums.AssetClass;
-import org.application.mars.MarketData.models.Polygon.enums.Locale;
+import org.application.mars.MarketData.models.Massive.enums.Input.Market;
+import org.application.mars.MarketData.models.Massive.enums.Input.Order;
+import org.application.mars.MarketData.models.Massive.enums.Input.Sort;
+import org.application.mars.MarketData.models.Massive.enums.Input.Type;
+import org.application.mars.MarketData.models.Massive.enums.AssetClass;
+import org.application.mars.MarketData.models.Massive.enums.Locale;
 import org.application.mars.MarketData.service.TickerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

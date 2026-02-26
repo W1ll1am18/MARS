@@ -2,16 +2,16 @@ package org.application.mars.MarketData.service;
 
 import lombok.RequiredArgsConstructor;
 import org.application.mars.MarketData.client.MassiveClient;
-import org.application.mars.MarketData.models.Polygon.Tickers.TickerOverviewResponse;
-import org.application.mars.MarketData.models.Polygon.Tickers.TickerRelatedResponse;
-import org.application.mars.MarketData.models.Polygon.Tickers.TickerResponse;
-import org.application.mars.MarketData.models.Polygon.Tickers.TickerTypeResponse;
-import org.application.mars.MarketData.models.Polygon.enums.Input.Market;
-import org.application.mars.MarketData.models.Polygon.enums.Input.Order;
-import org.application.mars.MarketData.models.Polygon.enums.Input.Sort;
-import org.application.mars.MarketData.models.Polygon.enums.Input.Type;
-import org.application.mars.MarketData.models.Polygon.enums.Locale;
-import org.application.mars.MarketData.models.Polygon.enums.AssetClass;
+import org.application.mars.MarketData.models.Massive.Tickers.TickerOverviewResponse;
+import org.application.mars.MarketData.models.Massive.Tickers.TickerRelatedResponse;
+import org.application.mars.MarketData.models.Massive.Tickers.TickerResponse;
+import org.application.mars.MarketData.models.Massive.Tickers.TickerTypeResponse;
+import org.application.mars.MarketData.models.Massive.enums.Input.Market;
+import org.application.mars.MarketData.models.Massive.enums.Input.Order;
+import org.application.mars.MarketData.models.Massive.enums.Input.Sort;
+import org.application.mars.MarketData.models.Massive.enums.Input.Type;
+import org.application.mars.MarketData.models.Massive.enums.Locale;
+import org.application.mars.MarketData.models.Massive.enums.AssetClass;
 import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;

@@ -1,8 +1,8 @@
 package org.application.mars.MarketData.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.application.mars.MarketData.models.Polygon.enums.Input.Order;
-import org.application.mars.MarketData.models.Polygon.enums.Input.Timespan;
+import org.application.mars.MarketData.models.Massive.enums.Input.Order;
+import org.application.mars.MarketData.models.Massive.enums.Input.Timespan;
 import org.application.mars.MarketData.service.AggregateBarService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,9 +31,9 @@ public class AggregateBarsController {
 
     @GetMapping("/daily/{date}")
     public ResponseEntity<?> getDailyMarketSummary (
-        @PathVariable LocalDate date,
-        @RequestParam(required = false, defaultValue = "true") Boolean adjusted,
-        @RequestParam(required = false, defaultValue = "true") Boolean includeOtc
+            @PathVariable LocalDate date,
+            @RequestParam(required = false, defaultValue = "true") Boolean adjusted,
+            @RequestParam(required = false, defaultValue = "true") Boolean includeOtc
     ) {
         return ResponseEntity.ok(aggregateBarService.getDailyMarketSummary(date, adjusted, includeOtc));
     }

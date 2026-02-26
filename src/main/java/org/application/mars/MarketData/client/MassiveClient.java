@@ -2,15 +2,16 @@ package org.application.mars.MarketData.client;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.application.mars.MarketData.models.Polygon.AggregateBars.CustomBarsResponse;
-import org.application.mars.MarketData.models.Polygon.AggregateBars.DailyMarketSummaryResponse;
-import org.application.mars.MarketData.models.Polygon.AggregateBars.DailyTickerSummaryResponse;
-import org.application.mars.MarketData.models.Polygon.AggregateBars.PreviousDayBarResponse;
-import org.application.mars.MarketData.models.Polygon.TechnicalIndicators.SimpleMovingAverageResponse;
-import org.application.mars.MarketData.models.Polygon.Tickers.TickerOverviewResponse;
-import org.application.mars.MarketData.models.Polygon.Tickers.TickerRelatedResponse;
-import org.application.mars.MarketData.models.Polygon.Tickers.TickerResponse;
-import org.application.mars.MarketData.models.Polygon.Tickers.TickerTypeResponse;
+import org.application.mars.MarketData.models.Massive.AggregateBars.CustomBarsResponse;
+import org.application.mars.MarketData.models.Massive.AggregateBars.DailyMarketSummaryResponse;
+import org.application.mars.MarketData.models.Massive.AggregateBars.DailyTickerSummaryResponse;
+import org.application.mars.MarketData.models.Massive.AggregateBars.PreviousDayBarResponse;
+import org.application.mars.MarketData.models.Massive.Indicators.IndicatorResponse;
+import org.application.mars.MarketData.models.Massive.Operations.ExchangesResponse;
+import org.application.mars.MarketData.models.Massive.Tickers.TickerOverviewResponse;
+import org.application.mars.MarketData.models.Massive.Tickers.TickerRelatedResponse;
+import org.application.mars.MarketData.models.Massive.Tickers.TickerResponse;
+import org.application.mars.MarketData.models.Massive.Tickers.TickerTypeResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -61,7 +62,7 @@ public class MassiveClient {
     }
 
     public TickerRelatedResponse getRelatedCompanies(String filtersUrl) {
-        String url = "https://api.massive.com/v1/related-companies/" + filtersUrl + "apiKey=" + apiKey; //Idk why v1 works but v2 doesnt. Care
+        String url = "https://api.massive.com/v1/related-companies/" + filtersUrl + "apiKey=" + apiKey; //Idk why v1 works but v2 doesnt.
         return sendRequest(url, TickerRelatedResponse.class);
     }
 
@@ -85,8 +86,28 @@ public class MassiveClient {
         return sendRequest(url, PreviousDayBarResponse.class);
     }
 
-    public SimpleMovingAverageResponse getSimpleMovingAverage(String filtersUrl) {
+    public IndicatorResponse getSimpleMovingAverage(String filtersUrl) {
         String url = "https://api.massive.com/v1/indicators/sma/" + filtersUrl + "apiKey=" + apiKey;
-        return sendRequest(url, SimpleMovingAverageResponse.class);
+        return sendRequest(url, IndicatorResponse.class);
+    }
+
+    public IndicatorResponse getExponentialMovingAverage(String filtersUrl) {
+        String url = "https://api.massive.com/v1/indicators/ema/" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, IndicatorResponse.class);
+    }
+
+    public IndicatorResponse getMovingAverageConvergenceDivergence(String filtersUrl) {
+        String url = "https://api.massive.com/v1/indicators/macd/" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, IndicatorResponse.class);
+    }
+
+    public IndicatorResponse getRelativeStrengthIndex(String filtersUrl) {
+        String url = "https://api.massive.com/v1/indicators/rsi/" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, IndicatorResponse.class);
+    }
+
+    public ExchangesResponse getExchanges(String filtersUrl) {
+        String url = "https://api.massive.com/v3/reference/exchanges?" +  filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, ExchangesResponse.class);
     }
 }

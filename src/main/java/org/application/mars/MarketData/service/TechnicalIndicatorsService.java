@@ -2,11 +2,11 @@ package org.application.mars.MarketData.service;
 
 import lombok.RequiredArgsConstructor;
 import org.application.mars.MarketData.client.MassiveClient;
-import org.application.mars.MarketData.models.Polygon.TechnicalIndicators.SimpleMovingAverageResponse;
-import org.application.mars.MarketData.models.Polygon.enums.Input.Order;
-import org.application.mars.MarketData.models.Polygon.enums.Input.SeriesType;
-import org.application.mars.MarketData.models.Polygon.enums.Input.Timespan;
-import org.application.mars.MarketData.models.Polygon.enums.Input.TimespanSMA;
+import org.application.mars.MarketData.models.Massive.Indicators.IndicatorResponse;
+import org.application.mars.MarketData.models.Massive.enums.Indicator;
+import org.application.mars.MarketData.models.Massive.enums.Input.Order;
+import org.application.mars.MarketData.models.Massive.enums.Input.SeriesType;
+import org.application.mars.MarketData.models.Massive.enums.Input.TimespanMA;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -16,9 +16,9 @@ import java.time.LocalDate;
 public class TechnicalIndicatorsService {
     private final MassiveClient massiveClient;
 
-    public SimpleMovingAverageResponse getSimpleMovingAverage(String stocksTicker, LocalDate timeStamp, TimespanSMA timespan,
-                                                              Boolean adjusted, Integer window, SeriesType seriesType,
-                                                              Boolean expandUnderlying, Order order, Integer limit)
+    public IndicatorResponse getIndicator(Indicator indicator, String stocksTicker, LocalDate timeStamp, TimespanMA timespan,
+                                          Boolean adjusted, Integer window, SeriesType seriesType,
+                                          Boolean expandUnderlying, Order order, Integer limit)
     {
         StringBuilder url = new StringBuilder();
         url.append(stocksTicker).append("?");
@@ -31,6 +31,11 @@ public class TechnicalIndicatorsService {
         if (order != null) {url.append("order=").append(order).append("&");}
         if (limit != null) {url.append("limit=").append(limit).append("&");}
 
-        return massiveClient.getSimpleMovingAverage(url.toString());
+        if (indicator == Indicator.SMA) {return massiveClient.getSimpleMovingAverage(url.toString());}
+        if (indicator == Indicator.EMA) {return massiveClient.getExponentialMovingAverage(url.toString());}
+        if (indicator == Indicator.MACD) {return massiveClient.getMovingAverageConvergenceDivergence(url.toString());}
+        if (indicator == Indicator.RSI) {return massiveClient.getRelativeStrengthIndex(url.toString());}
+
+        return null;
     }
 }

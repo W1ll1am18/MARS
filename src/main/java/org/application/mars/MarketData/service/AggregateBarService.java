@@ -2,12 +2,12 @@ package org.application.mars.MarketData.service;
 
 import lombok.RequiredArgsConstructor;
 import org.application.mars.MarketData.client.MassiveClient;
-import org.application.mars.MarketData.models.Polygon.AggregateBars.CustomBarsResponse;
-import org.application.mars.MarketData.models.Polygon.AggregateBars.DailyMarketSummaryResponse;
-import org.application.mars.MarketData.models.Polygon.AggregateBars.DailyTickerSummaryResponse;
-import org.application.mars.MarketData.models.Polygon.AggregateBars.PreviousDayBarResponse;
-import org.application.mars.MarketData.models.Polygon.enums.Input.Order;
-import org.application.mars.MarketData.models.Polygon.enums.Input.Timespan;
+import org.application.mars.MarketData.models.Massive.AggregateBars.CustomBarsResponse;
+import org.application.mars.MarketData.models.Massive.AggregateBars.DailyMarketSummaryResponse;
+import org.application.mars.MarketData.models.Massive.AggregateBars.DailyTickerSummaryResponse;
+import org.application.mars.MarketData.models.Massive.AggregateBars.PreviousDayBarResponse;
+import org.application.mars.MarketData.models.Massive.enums.Input.Order;
+import org.application.mars.MarketData.models.Massive.enums.Input.Timespan;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
