@@ -1,6 +1,6 @@
 package org.application.mars.MarketData.models.Massive.enums.Output;
 
-public enum typeExchange {
+public enum TypeExchange {
     SIP,
     ORF,
     TRF,

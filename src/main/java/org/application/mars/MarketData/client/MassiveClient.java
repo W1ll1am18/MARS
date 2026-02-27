@@ -7,17 +7,22 @@ import org.application.mars.MarketData.models.Massive.AggregateBars.DailyMarketS
 import org.application.mars.MarketData.models.Massive.AggregateBars.DailyTickerSummaryResponse;
 import org.application.mars.MarketData.models.Massive.AggregateBars.PreviousDayBarResponse;
 import org.application.mars.MarketData.models.Massive.Indicators.IndicatorResponse;
+import org.application.mars.MarketData.models.Massive.Operations.ConditionCodesResponse;
 import org.application.mars.MarketData.models.Massive.Operations.ExchangesResponse;
+import org.application.mars.MarketData.models.Massive.Operations.MarketHolidaysResponse;
+import org.application.mars.MarketData.models.Massive.Operations.MarketStatusResponse;
 import org.application.mars.MarketData.models.Massive.Tickers.TickerOverviewResponse;
 import org.application.mars.MarketData.models.Massive.Tickers.TickerRelatedResponse;
 import org.application.mars.MarketData.models.Massive.Tickers.TickerResponse;
 import org.application.mars.MarketData.models.Massive.Tickers.TickerTypeResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.time.Duration;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -109,5 +114,36 @@ public class MassiveClient {
     public ExchangesResponse getExchanges(String filtersUrl) {
         String url = "https://api.massive.com/v3/reference/exchanges?" +  filtersUrl + "apiKey=" + apiKey;
         return sendRequest(url, ExchangesResponse.class);
+    }
+
+    public List<MarketHolidaysResponse> getMarketHolidays() {
+        String url = "https://api.massive.com/v1/marketstatus/upcoming?apiKey=" + apiKey;
+
+        try {
+            return webClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<List<MarketHolidaysResponse>>() {})
+                    .block();
+        } catch (WebClientResponseException.TooManyRequests e) {
+            System.err.println("Rate limit exceeded: " + e.getResponseBodyAsString());
+            throw new RuntimeException("API rate limit exceeded. Please try again later");
+        } catch (WebClientResponseException e) {
+            System.err.println("API Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
+            throw new RuntimeException("Failed to fetch: " + e.getMessage(), e);
+        } catch (Exception e) {
+            System.err.println("Error calling Polygon API: " + e.getMessage());
+            throw new RuntimeException("Failed to fetch", e);
+        }
+    }
+
+    public MarketStatusResponse getMarketStatus() {
+        String url = "https://api.massive.com/v1/marketstatus/now?apiKey=" + apiKey;
+        return sendRequest(url, MarketStatusResponse.class);
+    }
+
+    public ConditionCodesResponse getConditionCodes(String filtersUrl) {
+        String url = "https://api.massive.com/v3/reference/conditions?" +  filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, ConditionCodesResponse.class);
     }
 }
