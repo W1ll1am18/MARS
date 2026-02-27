@@ -1,0 +1,37 @@
+Market Data
+--Polygon--
+5 API Calls/minute - Unlimited
+All stock tickers list
+EOD price data (OHLCV)
+2 years history
+Splits, dividends (corporate actions)
+Basic company reference data (name, sector, market cap)
+Technical indicators (SMA, EMA, RSI, MACD)
+Minute-level aggregates
+NO financial statements or fundamental ratios on free tier
+
+Use Polygon For:
+Daily price charts (reliable, won't get blocked)
+Historical OHLCV data
+Intraday minute bars
+Technical indicators
+Production-ready reliability
+
+--Yahoo Finance--
+Stock quotes and historical prices
+Financial statements (income statement, balance sheet, cash flow)
+Key statistics (P/E, profit margins, debt ratios, ROE, etc.)
+Analyst ratings and price targets
+Earnings history and estimates
+Dividend history
+Company profile and description
+No official rate limits (but they block you with 429 errors when you abuse it)
+
+Use Yahoo Finance For:
+Fundamental data (P/E ratios, financial statements)
+Earnings history
+Long historical data (10+ years)
+Quick prototyping/testing
+
+
+
