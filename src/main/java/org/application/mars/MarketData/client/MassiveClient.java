@@ -6,6 +6,10 @@ import org.application.mars.MarketData.models.Massive.AggregateBars.CustomBarsRe
 import org.application.mars.MarketData.models.Massive.AggregateBars.DailyMarketSummaryResponse;
 import org.application.mars.MarketData.models.Massive.AggregateBars.DailyTickerSummaryResponse;
 import org.application.mars.MarketData.models.Massive.AggregateBars.PreviousDayBarResponse;
+import org.application.mars.MarketData.models.Massive.CorporateActions.DividendsResponse;
+import org.application.mars.MarketData.models.Massive.CorporateActions.IPOResponse;
+import org.application.mars.MarketData.models.Massive.CorporateActions.SplitsResponse;
+import org.application.mars.MarketData.models.Massive.CorporateActions.TickerEventsResponse;
 import org.application.mars.MarketData.models.Massive.Indicators.IndicatorResponse;
 import org.application.mars.MarketData.models.Massive.Operations.ConditionCodesResponse;
 import org.application.mars.MarketData.models.Massive.Operations.ExchangesResponse;
@@ -145,5 +149,25 @@ public class MassiveClient {
     public ConditionCodesResponse getConditionCodes(String filtersUrl) {
         String url = "https://api.massive.com/v3/reference/conditions?" +  filtersUrl + "apiKey=" + apiKey;
         return sendRequest(url, ConditionCodesResponse.class);
+    }
+
+    public IPOResponse getIPOs(String filtersUrl) {
+        String url = "https://api.massive.com/vX/reference/ipos?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, IPOResponse.class);
+    }
+
+    public SplitsResponse getSplits(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/v1/splits?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, SplitsResponse.class);
+    }
+
+    public DividendsResponse getDividends(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/v1/dividends?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, DividendsResponse.class);
+    }
+
+    public TickerEventsResponse getTickerEvents(String filtersUrl) {
+        String url = "https://api.massive.com/vX/reference/tickers" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, TickerEventsResponse.class);
     }
 }
