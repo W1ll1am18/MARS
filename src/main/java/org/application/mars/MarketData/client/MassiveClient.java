@@ -26,6 +26,7 @@ import org.application.mars.MarketData.models.Massive.Tickers.TickerOverviewResp
 import org.application.mars.MarketData.models.Massive.Tickers.TickerRelatedResponse;
 import org.application.mars.MarketData.models.Massive.Tickers.TickerResponse;
 import org.application.mars.MarketData.models.Massive.Tickers.TickerTypeResponse;
+import org.application.mars.MarketData.models.News.NewsResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
@@ -211,5 +212,10 @@ public class MassiveClient {
     public RiskCategoriesResponse getRiskCategories(String filtersUrl) {
         String url = "https://api.massive.com/stocks/taxonomies/vX/risk-factors?" + filtersUrl + "apiKey=" + apiKey;
         return sendRequest(url, RiskCategoriesResponse.class);
+    }
+
+    public NewsResponse getNews(String filtersUrl) {
+        String url = "https://api.massive.com/v2/reference/news?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, NewsResponse.class);
     }
 }
