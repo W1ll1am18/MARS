@@ -2,6 +2,10 @@ package org.application.mars.MarketData.client;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.application.mars.MarketData.models.Disclosures.IndexResponse;
+import org.application.mars.MarketData.models.Disclosures.RiskCategoriesResponse;
+import org.application.mars.MarketData.models.Disclosures.RiskFactorsResponse;
+import org.application.mars.MarketData.models.Disclosures.TenKSectionsResponse;
 import org.application.mars.MarketData.models.Massive.AggregateBars.CustomBarsResponse;
 import org.application.mars.MarketData.models.Massive.AggregateBars.DailyMarketSummaryResponse;
 import org.application.mars.MarketData.models.Massive.AggregateBars.DailyTickerSummaryResponse;
@@ -42,7 +46,7 @@ public class MassiveClient {
     private <T> T sendRequest(String url, Class<T> responseType) {
         System.out.println(url);
         try {
-            return webClient.get().uri(url).retrieve().bodyToMono(responseType).block(Duration.ofSeconds(10));
+            return webClient.get().uri(url).retrieve().bodyToMono(responseType).block(Duration.ofSeconds(60));
 
         } catch (WebClientResponseException.TooManyRequests e) {
             System.err.println("Rate limit exceeded" + e.getResponseBodyAsString());
@@ -187,5 +191,25 @@ public class MassiveClient {
     public FloatResponse getFloatResponse(String filtersUrl) {
         String url = "https://api.massive.com/stocks/vX/float?" + filtersUrl + "apiKey=" + apiKey;
         return sendRequest(url, FloatResponse.class);
+    }
+
+    public IndexResponse getIndexResponse(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/filings/vX/index?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, IndexResponse.class);
+    }
+
+    public TenKSectionsResponse getTenKSections(String filtersUrl) { //This one is very slow. API very slow and times out itself also
+        String url = "https://api.massive.com/stocks/filings/10-K/vX/sections?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, TenKSectionsResponse.class);
+    }
+
+    public RiskFactorsResponse getRiskFactors(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/filings/vX/risk-factors?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, RiskFactorsResponse.class);
+    }
+
+    public RiskCategoriesResponse getRiskCategories(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/taxonomies/vX/risk-factors?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, RiskCategoriesResponse.class);
     }
 }
