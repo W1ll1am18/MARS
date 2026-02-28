@@ -10,6 +10,9 @@ import org.application.mars.MarketData.models.Massive.CorporateActions.Dividends
 import org.application.mars.MarketData.models.Massive.CorporateActions.IPOResponse;
 import org.application.mars.MarketData.models.Massive.CorporateActions.SplitsResponse;
 import org.application.mars.MarketData.models.Massive.CorporateActions.TickerEventsResponse;
+import org.application.mars.MarketData.models.Massive.Fundamentals.FloatResponse;
+import org.application.mars.MarketData.models.Massive.Fundamentals.ShortInterestResponse;
+import org.application.mars.MarketData.models.Massive.Fundamentals.ShortVolumeResponse;
 import org.application.mars.MarketData.models.Massive.Indicators.IndicatorResponse;
 import org.application.mars.MarketData.models.Massive.Operations.ConditionCodesResponse;
 import org.application.mars.MarketData.models.Massive.Operations.ExchangesResponse;
@@ -169,5 +172,20 @@ public class MassiveClient {
     public TickerEventsResponse getTickerEvents(String filtersUrl) {
         String url = "https://api.massive.com/vX/reference/tickers" + filtersUrl + "apiKey=" + apiKey;
         return sendRequest(url, TickerEventsResponse.class);
+    }
+
+    public ShortInterestResponse getShortInterestResponse(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/v1/short-interest?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, ShortInterestResponse.class);
+    }
+
+    public ShortVolumeResponse getShortVolumeResponse(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/v1/short-volume?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, ShortVolumeResponse.class);
+    }
+
+    public FloatResponse getFloatResponse(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/vX/float?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, FloatResponse.class);
     }
 }
