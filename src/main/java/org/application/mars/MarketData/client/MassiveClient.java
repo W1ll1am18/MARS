@@ -2,10 +2,21 @@ package org.application.mars.MarketData.client;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.application.mars.MarketData.models.Disclosures.IndexResponse;
+import org.application.mars.MarketData.models.Disclosures.RiskCategoriesResponse;
+import org.application.mars.MarketData.models.Disclosures.RiskFactorsResponse;
+import org.application.mars.MarketData.models.Disclosures.TenKSectionsResponse;
 import org.application.mars.MarketData.models.Massive.AggregateBars.CustomBarsResponse;
 import org.application.mars.MarketData.models.Massive.AggregateBars.DailyMarketSummaryResponse;
 import org.application.mars.MarketData.models.Massive.AggregateBars.DailyTickerSummaryResponse;
 import org.application.mars.MarketData.models.Massive.AggregateBars.PreviousDayBarResponse;
+import org.application.mars.MarketData.models.Massive.CorporateActions.DividendsResponse;
+import org.application.mars.MarketData.models.Massive.CorporateActions.IPOResponse;
+import org.application.mars.MarketData.models.Massive.CorporateActions.SplitsResponse;
+import org.application.mars.MarketData.models.Massive.CorporateActions.TickerEventsResponse;
+import org.application.mars.MarketData.models.Massive.Fundamentals.FloatResponse;
+import org.application.mars.MarketData.models.Massive.Fundamentals.ShortInterestResponse;
+import org.application.mars.MarketData.models.Massive.Fundamentals.ShortVolumeResponse;
 import org.application.mars.MarketData.models.Massive.Indicators.IndicatorResponse;
 import org.application.mars.MarketData.models.Massive.Operations.ConditionCodesResponse;
 import org.application.mars.MarketData.models.Massive.Operations.ExchangesResponse;
@@ -15,6 +26,7 @@ import org.application.mars.MarketData.models.Massive.Tickers.TickerOverviewResp
 import org.application.mars.MarketData.models.Massive.Tickers.TickerRelatedResponse;
 import org.application.mars.MarketData.models.Massive.Tickers.TickerResponse;
 import org.application.mars.MarketData.models.Massive.Tickers.TickerTypeResponse;
+import org.application.mars.MarketData.models.News.NewsResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
@@ -35,7 +47,7 @@ public class MassiveClient {
     private <T> T sendRequest(String url, Class<T> responseType) {
         System.out.println(url);
         try {
-            return webClient.get().uri(url).retrieve().bodyToMono(responseType).block(Duration.ofSeconds(10));
+            return webClient.get().uri(url).retrieve().bodyToMono(responseType).block(Duration.ofSeconds(60));
 
         } catch (WebClientResponseException.TooManyRequests e) {
             System.err.println("Rate limit exceeded" + e.getResponseBodyAsString());
@@ -145,5 +157,65 @@ public class MassiveClient {
     public ConditionCodesResponse getConditionCodes(String filtersUrl) {
         String url = "https://api.massive.com/v3/reference/conditions?" +  filtersUrl + "apiKey=" + apiKey;
         return sendRequest(url, ConditionCodesResponse.class);
+    }
+
+    public IPOResponse getIPOs(String filtersUrl) {
+        String url = "https://api.massive.com/vX/reference/ipos?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, IPOResponse.class);
+    }
+
+    public SplitsResponse getSplits(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/v1/splits?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, SplitsResponse.class);
+    }
+
+    public DividendsResponse getDividends(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/v1/dividends?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, DividendsResponse.class);
+    }
+
+    public TickerEventsResponse getTickerEvents(String filtersUrl) {
+        String url = "https://api.massive.com/vX/reference/tickers" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, TickerEventsResponse.class);
+    }
+
+    public ShortInterestResponse getShortInterestResponse(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/v1/short-interest?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, ShortInterestResponse.class);
+    }
+
+    public ShortVolumeResponse getShortVolumeResponse(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/v1/short-volume?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, ShortVolumeResponse.class);
+    }
+
+    public FloatResponse getFloatResponse(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/vX/float?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, FloatResponse.class);
+    }
+
+    public IndexResponse getIndexResponse(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/filings/vX/index?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, IndexResponse.class);
+    }
+
+    public TenKSectionsResponse getTenKSections(String filtersUrl) { //This one is very slow. API very slow and times out itself also
+        String url = "https://api.massive.com/stocks/filings/10-K/vX/sections?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, TenKSectionsResponse.class);
+    }
+
+    public RiskFactorsResponse getRiskFactors(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/filings/vX/risk-factors?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, RiskFactorsResponse.class);
+    }
+
+    public RiskCategoriesResponse getRiskCategories(String filtersUrl) {
+        String url = "https://api.massive.com/stocks/taxonomies/vX/risk-factors?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, RiskCategoriesResponse.class);
+    }
+
+    public NewsResponse getNews(String filtersUrl) {
+        String url = "https://api.massive.com/v2/reference/news?" + filtersUrl + "apiKey=" + apiKey;
+        return sendRequest(url, NewsResponse.class);
     }
 }
