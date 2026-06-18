@@ -32,7 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 
-# Local configuration files
+### Config ###
 application-local.yml
 application-local.properties
 .env
