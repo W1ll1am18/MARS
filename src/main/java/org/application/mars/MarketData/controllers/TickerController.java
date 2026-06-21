@@ -1,7 +1,7 @@
 package org.application.mars.MarketData.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.application.mars.MarketData.models.Massive.enums.Input.Market;
+import org.application.mars.MarketData.models.Massive.enums.Market;
 import org.application.mars.MarketData.models.Massive.enums.Input.Order;
 import org.application.mars.MarketData.models.Massive.enums.Input.Sort;
 import org.application.mars.MarketData.models.Massive.enums.Input.Type;

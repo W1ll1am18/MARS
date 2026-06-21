@@ -46,7 +46,7 @@ CREATE TABLE ticker (
 );
 
 CREATE UNIQUE INDEX idx_ticker_exchange ON ticker (ticker, primary_exchange);
-CREATE INDEX idx_ticker_composite_figi ON ticker (composite_figi);
+CREATE UNIQUE INDEX idx_ticker_composite_figi ON ticker (composite_figi) WHERE composite_figi IS NOT NULL;
 CREATE INDEX idx_ticker_cik ON ticker (cik);
 CREATE INDEX idx_ticker_type ON ticker (type);
 
