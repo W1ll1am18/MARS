@@ -20,3 +20,6 @@ spring:
 
 polygon:
   api-key: ${POLYGON_API_KEY}
+
+finnhub:
+  api-key: ${FINNHUB_API_KEY}

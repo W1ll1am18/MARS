@@ -45,7 +45,7 @@ public class MassiveClient {
     private final WebClient webClient;
 
     private <T> T sendRequest(String url, Class<T> responseType) {
-        System.out.println(url);
+        log.info("Polygon request: {}", url);
         try {
             return webClient.get().uri(url).retrieve().bodyToMono(responseType).block(Duration.ofSeconds(60));
 
