@@ -13,4 +13,4 @@ INSERT INTO ticker_type (code) VALUES
     ('CS'), ('ADRC'), ('ADRP'), ('ADRR'), ('UNIT'), ('RIGHT'), ('PFD'),
     ('FUND'), ('SP'), ('WARRANT'), ('INDEX'), ('ETF'), ('ETN'), ('OS'),
     ('GDR'), ('OTHER'), ('NYSR'), ('AGEN'), ('EQLK'), ('BOND'), ('ADRW'),
-    ('BASKET'), ('LT'), ('ETS');
+    ('BASKET'), ('LT'), ('ETS'), ('ETV'), ('NYRS');

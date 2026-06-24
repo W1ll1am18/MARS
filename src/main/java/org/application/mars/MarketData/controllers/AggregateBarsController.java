@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.application.mars.MarketData.models.Massive.enums.Input.Order;
 import org.application.mars.MarketData.models.Massive.enums.Input.Timespan;
 import org.application.mars.MarketData.service.AggregateBarService;
+import org.application.mars.MarketData.service.PriceChartService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,19 +15,35 @@ import java.time.LocalDate;
 @RequestMapping("/bars")
 public class AggregateBarsController {
     private final AggregateBarService aggregateBarService;
+    private final PriceChartService priceChartService;
 
-    @GetMapping("/custom/{stocksTicker}/{multiplier}/{timeSpan}/{from}/{to}")
+//    @GetMapping("/custom/{stocksTicker}/{multiplier}/{timeSpan}/{from}/{to}")
+//    public ResponseEntity<?> getCustomBars(
+//            @PathVariable String stocksTicker,
+//            @PathVariable Long multiplier,
+//            @PathVariable Timespan timeSpan,
+//            @PathVariable LocalDate from, //YYYY-MM-DD
+//            @PathVariable LocalDate to, //YYYY-MM-DD
+//            @RequestParam(required = false, defaultValue = "true") Boolean adjusted,
+//            @RequestParam(required = false, defaultValue = "ASC") Order order,
+//            @RequestParam(required = false, defaultValue = "5000") Integer limit
+//    ) {
+//        return ResponseEntity.ok(aggregateBarService.getCustomBars(stocksTicker, multiplier, timeSpan, from, to, adjusted, order, limit));
+//    }
+
+    @GetMapping("/custom/{stocksTicker}")
     public ResponseEntity<?> getCustomBars(
             @PathVariable String stocksTicker,
-            @PathVariable Long multiplier,
-            @PathVariable Timespan timeSpan,
-            @PathVariable LocalDate from, //YYYY-MM-DD
-            @PathVariable LocalDate to, //YYYY-MM-DD
+            @RequestParam(defaultValue = "1") Long multiplier,
+            @RequestParam(defaultValue = "DAY") Timespan timeSpan,
+            //TODO Placeholder values ----------------------------------------------------
+            @RequestParam(defaultValue = "2010-06-24") LocalDate from, //YYYY-MM-DD
+            @RequestParam(defaultValue = "2026-06-24") LocalDate to, //YYYY-MM-DD
             @RequestParam(required = false, defaultValue = "true") Boolean adjusted,
             @RequestParam(required = false, defaultValue = "ASC") Order order,
             @RequestParam(required = false, defaultValue = "5000") Integer limit
     ) {
-        return ResponseEntity.ok(aggregateBarService.getCustomBars(stocksTicker, multiplier, timeSpan, from, to, adjusted, order, limit));
+        return ResponseEntity.ok(priceChartService.getPrices(stocksTicker, multiplier, timeSpan, from, to, adjusted, order, limit));
     }
 
     @GetMapping("/daily/{date}")

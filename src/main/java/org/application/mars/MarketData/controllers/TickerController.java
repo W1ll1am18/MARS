@@ -7,6 +7,7 @@ import org.application.mars.MarketData.models.Massive.enums.Input.Sort;
 import org.application.mars.MarketData.models.Massive.enums.Input.Type;
 import org.application.mars.MarketData.models.Massive.enums.AssetClass;
 import org.application.mars.MarketData.models.Massive.enums.Locale;
+import org.application.mars.MarketData.service.TickerOverviewService;
 import org.application.mars.MarketData.service.TickerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 @RequestMapping("/stocks")
 public class TickerController {
     private final TickerService tickerService;
+    private final TickerOverviewService tickerOverviewService;
 
     @GetMapping("/tickers")
     public ResponseEntity<?> getTickers(
@@ -50,7 +52,7 @@ public class TickerController {
             @PathVariable String ticker,
             @RequestParam(required = false) LocalDate date
     ) {
-        return ResponseEntity.ok(tickerService.getTicker(ticker, date));
+        return ResponseEntity.ok(tickerOverviewService.getTickerOverview(ticker, date));
     }
 
     @GetMapping("/related-companies/{ticker}")

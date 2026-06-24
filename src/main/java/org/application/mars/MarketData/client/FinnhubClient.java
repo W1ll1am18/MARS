@@ -25,11 +25,7 @@ public class FinnhubClient {
     private <T> T sendRequest(String url, Class<T> responseType) {
         log.info("Finnhub request: {}", url);
         try {
-            return webClient.get()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(responseType)
-                .block(Duration.ofSeconds(60));
+            return webClient.get().uri(url).retrieve().bodyToMono(responseType).block(Duration.ofSeconds(60));
 
         } catch (WebClientResponseException.TooManyRequests e) {
             log.error("Finnhub rate limit exceeded: {}", e.getResponseBodyAsString());

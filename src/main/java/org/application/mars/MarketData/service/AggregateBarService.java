@@ -17,21 +17,21 @@ import java.time.LocalDate;
 public class AggregateBarService {
     private final MassiveClient massiveClient;
 
-    public CustomBarsResponse getCustomBars(String stocksTicker, Long multiplier, Timespan timeSpan, LocalDate from, LocalDate to, Boolean adjusted, Order order, Integer limit) {
-        StringBuilder url = new StringBuilder();
-
-        url.append("ticker/").append(stocksTicker.toUpperCase()).append("/");
-        url.append("range/").append(multiplier).append("/");
-        url.append(timeSpan.getValue()).append("/");
-        url.append(from).append("/");
-        url.append(to).append("?");
-
-        if (adjusted != null) {url.append("adjusted=").append(adjusted).append("&");}
-        if (order != null) {url.append("sort=").append(order.getValue()).append("&");}
-        if (limit != null) {url.append("limit=").append(limit).append("&");}
-
-        return massiveClient.getCustomBars(url.toString());
-    }
+//    public CustomBarsResponse getCustomBars(String stocksTicker, Long multiplier, Timespan timeSpan, LocalDate from, LocalDate to, Boolean adjusted, Order order, Integer limit) {
+//        StringBuilder url = new StringBuilder();
+//
+//        url.append("ticker/").append(stocksTicker.toUpperCase()).append("/");
+//        url.append("range/").append(multiplier).append("/");
+//        url.append(timeSpan.getValue()).append("/");
+//        url.append(from).append("/");
+//        url.append(to).append("?");
+//
+//        if (adjusted != null) {url.append("adjusted=").append(adjusted).append("&");}
+//        if (order != null) {url.append("sort=").append(order.getValue()).append("&");}
+//        if (limit != null) {url.append("limit=").append(limit).append("&");}
+//
+//        return massiveClient.getCustomBars(url.toString());
+//    }
 
     public DailyMarketSummaryResponse getDailyMarketSummary(LocalDate date, Boolean adjusted, Boolean includeOtc) {
         StringBuilder url = new StringBuilder();
