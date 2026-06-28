@@ -36,13 +36,13 @@ public class AggregateBarsController {
             @PathVariable String stocksTicker,
             @RequestParam(defaultValue = "1") Long multiplier,
             @RequestParam(defaultValue = "DAY") Timespan timeSpan,
-            //TODO Placeholder values ----------------------------------------------------
-            @RequestParam(defaultValue = "2010-06-24") LocalDate from, //YYYY-MM-DD
-            @RequestParam(defaultValue = "2026-06-24") LocalDate to, //YYYY-MM-DD
+            @RequestParam(required = false) LocalDate from,
+            @RequestParam(required = false) LocalDate to,
             @RequestParam(required = false, defaultValue = "true") Boolean adjusted,
             @RequestParam(required = false, defaultValue = "ASC") Order order,
-            @RequestParam(required = false, defaultValue = "5000") Integer limit
+            @RequestParam(required = false) Integer limit
     ) {
+        //From, to and limit are passed in as null care. Service handles this
         return ResponseEntity.ok(priceChartService.getPrices(stocksTicker, multiplier, timeSpan, from, to, adjusted, order, limit));
     }
 

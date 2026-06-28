@@ -22,3 +22,7 @@ polygon:
 
 finnhub:
   api-key: ${FINNHUB_API_KEY}
+
+logging:
+  level:
+    org.hibernate.orm.jdbc.error: ERROR

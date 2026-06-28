@@ -4,11 +4,14 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.application.mars.MarketData.entities.TickerCompanyInfoEntity;
 import org.application.mars.MarketData.entities.TickerEntity;
+import org.application.mars.MarketData.entities.TickerFinancialsEntity;
+import org.application.mars.MarketData.models.Finnhub.CompanyInfo.FinancialMetrics;
 import org.application.mars.MarketData.models.Massive.Tickers.Ticker;
 import org.application.mars.MarketData.models.Massive.Tickers.TickerOverview;
 import org.application.mars.MarketData.models.Massive.enums.Locale;
 import org.application.mars.MarketData.models.Massive.enums.Market;
 import org.application.mars.MarketData.repository.TickerCompanyInfoRepository;
+import org.application.mars.MarketData.repository.TickerFinancialsRepository;
 import org.application.mars.MarketData.repository.TickerRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
@@ -23,6 +26,7 @@ import java.util.Optional;
 public class TickerWriter {
     private final TickerRepository tickerRepository;
     private final TickerCompanyInfoRepository tickerCompanyInfoRepository;
+    private final TickerFinancialsRepository tickerFinancialsRepository;
     private final TickerSaver tickerSaver; // inject the new bean
 
     // NO @Transactional here, the method itself must not own a transaction
@@ -80,6 +84,62 @@ public class TickerWriter {
 
         tickerCompanyInfoRepository.save(infoEntity);
     }
+
+    @Transactional
+    public TickerFinancialsEntity upsertTickerFinancials(TickerEntity tickerEntity, FinancialMetrics metrics) {
+        TickerFinancialsEntity entity = tickerFinancialsRepository
+                .findById(tickerEntity.getTickerId())
+                .orElse(new TickerFinancialsEntity());
+
+        entity.setTicker(tickerEntity);
+
+        // Beginner layer
+        entity.setPeRatioTTM(metrics.getPeRatioTTM());
+        entity.setPeRatioAnnual(metrics.getPeRatioAnnual());
+        entity.setForwardPE(metrics.getForwardPE());
+        entity.setPriceToBook(metrics.getPriceToBook());
+        entity.setWeekHigh52(metrics.getWeekHigh52());
+        entity.setWeekHigh52Date(metrics.getWeekHigh52Date());
+        entity.setWeekLow52(metrics.getWeekLow52());
+        entity.setWeekLow52Date(metrics.getWeekLow52Date());
+        entity.setDividendYield(metrics.getDividendYield());
+        entity.setDividendPerYear(metrics.getDividendPerYear());
+        entity.setBeta(metrics.getBeta());
+        entity.setEpsTTM(metrics.getEpsTTM());
+
+        // Intermediate layer
+        entity.setGrossMarginTTM(metrics.getGrossMarginTTM());
+        entity.setGrossMarginAnnual(metrics.getGrossMarginAnnual());
+        entity.setNetProfitMarginTTM(metrics.getNetProfitMarginTTM());
+        entity.setNetProfitMarginAnnual(metrics.getNetProfitMarginAnnual());
+        entity.setOperatingMarginTTM(metrics.getOperatingMarginTTM());
+        entity.setReturnOnEquity(metrics.getReturnOnEquity());
+        entity.setReturnOnAssets(metrics.getReturnOnAssets());
+        entity.setReturnOnInvestment(metrics.getReturnOnInvestment());
+        entity.setCurrentRatio(metrics.getCurrentRatio());
+        entity.setQuickRatio(metrics.getQuickRatio());
+        entity.setDebtToEquity(metrics.getDebtToEquity());
+        entity.setPayoutRatio(metrics.getPayoutRatio());
+
+        // Advanced layer
+        entity.setEvEbitdaTTM(metrics.getEvEbitdaTTM());
+        entity.setEvFreeCashFlow(metrics.getEvFreeCashFlow());
+        entity.setEnterpriseValue(metrics.getEnterpriseValue());
+        entity.setRevenueGrowthYoy(metrics.getRevenueGrowthYoy());
+        entity.setRevenueGrowth3y(metrics.getRevenueGrowth3Year());
+        entity.setRevenueGrowth5y(metrics.getRevenueGrowth5Year());
+        entity.setEpsGrowthYoy(metrics.getEpsGrowthYoy());
+        entity.setEpsGrowth3y(metrics.getEpsGrowth3Year());
+        entity.setEpsGrowth5y(metrics.getEpsGrowth5Year());
+        entity.setPegRatio(metrics.getPegRatio());
+        entity.setForwardPegRatio(metrics.getForwardPegRatio());
+        entity.setPriceToFreeCashFlow(metrics.getPriceToFreeCashFlow());
+
+        entity.setAccessed(Instant.now());
+
+        return tickerFinancialsRepository.save(entity);
+    }
+
 
     private TickerEntity buildEntity(Ticker ticker, Optional<TickerEntity> existing) {
         TickerEntity entity = existing.orElse(new TickerEntity());

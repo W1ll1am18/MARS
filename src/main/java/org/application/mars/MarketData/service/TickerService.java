@@ -1,7 +1,9 @@
 package org.application.mars.MarketData.service;
 
 import lombok.RequiredArgsConstructor;
+import org.application.mars.Common.utils.Constant;
 import org.application.mars.MarketData.client.MassiveClient;
+import org.application.mars.MarketData.components.TickerWriter;
 import org.application.mars.MarketData.entities.TickerCompanyInfoEntity;
 import org.application.mars.MarketData.entities.TickerEntity;
 import org.application.mars.MarketData.models.Massive.Tickers.*;
@@ -17,10 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.Optional;
 
 @Service
@@ -29,7 +28,7 @@ public class TickerService {
     private final MassiveClient massiveClient;
     private final TickerRepository tickerRepository;
     private final TickerCompanyInfoRepository tickerCompanyInfoRepository;
-    private static final Duration TICKER_TTL = Duration.ofHours(24);
+    private final TickerWriter tickerWriter;
 
     public TickerResponse getTickers(String ticker, Type type, Market market, String exchange, String cusip, String cik,
                                      LocalDate date, String search, Boolean active, Order order, Integer limit, Sort sort){
@@ -61,7 +60,7 @@ public class TickerService {
         TickerResponse response = massiveClient.getTickers(url.toString());
 
         if (response.getResults() != null) {
-            response.getResults().forEach(this::upsertTicker);
+            response.getResults().forEach(tickerWriter::upsertTicker);
         }
 
         return response;
@@ -76,8 +75,8 @@ public class TickerService {
             TickerEntity tickerEntity = cachedTicker.get();
             Optional<TickerCompanyInfoEntity> cachedInfo = tickerCompanyInfoRepository.findById(tickerEntity.getTickerId());
 
-            boolean tickerFresh = !isStale(tickerEntity.getAccessed());
-            boolean infoFresh = cachedInfo.isPresent() && !isStale(cachedInfo.get().getAccessed());
+            boolean tickerFresh = !Constant.isStale(tickerEntity.getAccessed());
+            boolean infoFresh = cachedInfo.isPresent() && !Constant.isStale(cachedInfo.get().getAccessed());
 
             if (tickerFresh && infoFresh) {
                 return mapToOverview(tickerEntity, cachedInfo.get()); // full DB hit
@@ -95,7 +94,7 @@ public class TickerService {
             throw new NullPointerException(upperTicker);
         }
 
-        upsertTickerOverview(response);
+        tickerWriter.upsertTickerOverview(response);
         return response;
     }
 
@@ -109,100 +108,7 @@ public class TickerService {
     }
 
     public TickerRelatedResponse getRelatedCompanies(String ticker) {
-        StringBuilder url = new StringBuilder();
-
-        url.append(ticker.toUpperCase()).append("?");
-        return massiveClient.getRelatedCompanies(url.toString());
-    }
-
-    //---------------------------------
-    // Helpers and Caching Logic
-    //---------------------------------
-
-    private boolean isStale(Instant accessed) {
-        return accessed == null || accessed.isBefore(Instant.now().minus(TICKER_TTL));
-    }
-
-    private Instant parseInstant(String isoTimestamp) {
-        if (isoTimestamp == null || isoTimestamp.isBlank()) return null;
-        try {
-            return Instant.parse(isoTimestamp);
-        } catch (DateTimeParseException e) {
-            return null; // or log a warning to notice malformed data without crashing the upsert
-        }
-    }
-
-    private LocalDate parseLocalDate(String isoDate) {
-        if (isoDate == null || isoDate.isBlank()) return null;
-        try {
-            return LocalDate.parse(isoDate);
-        } catch (DateTimeParseException e) {
-            return null;
-        }
-    }
-
-    private Optional<TickerEntity> findExisting(String compositeFigi, String ticker,
-                                                String primaryExchange, Market market, Locale locale) {
-        if (compositeFigi != null) {
-            Optional<TickerEntity> byFigi = tickerRepository.findByCompositeFigi(compositeFigi);
-            if (byFigi.isPresent()) return byFigi;
-        }
-        if (primaryExchange != null) {
-            return tickerRepository.findByTickerAndPrimaryExchange(ticker, primaryExchange);
-        }
-        return tickerRepository.findByTickerAndMarketAndLocale(ticker, market, locale);
-    }
-
-    private TickerEntity upsertTicker(Ticker ticker) {
-        TickerEntity entity = findExisting(ticker.getCompositeFigi(), ticker.getTicker(),
-                ticker.getPrimaryExchange(), ticker.getMarket(), ticker.getLocale())
-                .orElse(new TickerEntity());
-
-        entity.setCompositeFigi(ticker.getCompositeFigi());
-        entity.setTicker(ticker.getTicker());
-        entity.setName(ticker.getName());
-        entity.setMarket(ticker.getMarket());   // enum straight through, converter handles persistence
-        entity.setLocale(ticker.getLocale());
-        entity.setPrimaryExchange(ticker.getPrimaryExchange());
-        entity.setActive(ticker.getActive());
-        entity.setType(ticker.getType());
-        entity.setCik(ticker.getCik());
-        entity.setCurrencyName(ticker.getCurrencyName());
-        entity.setCurrencySymbol(ticker.getCurrencySymbol());
-        entity.setBaseCurrencyName(ticker.getBaseCurrencyName());
-        entity.setBaseCurrencySymbol(ticker.getBaseCurrencySymbol());
-        entity.setShareClassFigi(ticker.getShareClassFigi());
-        entity.setDelistedUtc(parseInstant(ticker.getDelistedUtc()));
-        entity.setLastUpdatedUtc(parseInstant(ticker.getLastUpdatedUtc()));
-        entity.setAccessed(Instant.now());
-
-        return tickerRepository.save(entity);
-    }
-
-    private void upsertTickerOverview(TickerOverview overview) {
-        TickerEntity tickerEntity = upsertTicker(overview);
-
-        TickerCompanyInfoEntity infoEntity = tickerCompanyInfoRepository
-            .findById(tickerEntity.getTickerId())
-            .orElse(new TickerCompanyInfoEntity());
-
-        infoEntity.setTicker(tickerEntity);
-        infoEntity.setDescription(overview.getDescription());
-        infoEntity.setHomepageUrl(overview.getHomepageUrl());
-        infoEntity.setListDate(parseLocalDate(overview.getListDate()));
-        infoEntity.setMarketCap(overview.getMarketCap());
-        infoEntity.setPhoneNumber(overview.getPhoneNumber());
-        infoEntity.setRoundLot(overview.getRoundLot());
-        infoEntity.setShareClassSharesOutstanding(overview.getShareClassSharesOutstanding());
-        infoEntity.setSicCode(overview.getSicCode());
-        infoEntity.setSicDescription(overview.getSicDescription());
-        infoEntity.setTickerRoot(overview.getTickerRoot());
-        infoEntity.setTickerSuffix(overview.getTickerSuffix());
-        infoEntity.setTotalEmployees(overview.getTotalEmployees());
-        infoEntity.setWeightedSharesOutstanding(overview.getWeightedSharesOutstanding());
-        infoEntity.setAccessed(Instant.now());
-
-        tickerCompanyInfoRepository.save(infoEntity);
+        return massiveClient.getRelatedCompanies(ticker.toUpperCase() + "?");
     }
 
     private TickerOverview mapToOverview(TickerEntity entity, TickerCompanyInfoEntity info) {

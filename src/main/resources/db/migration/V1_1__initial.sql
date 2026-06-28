@@ -71,6 +71,59 @@ CREATE TABLE ticker_company_info (
 
 CREATE INDEX idx_company_market_cap ON ticker_company_info (market_cap);
 
+-- Ticker financials also an extension of ticker
+CREATE TABLE ticker_financials (
+   ticker_id                BIGINT PRIMARY KEY REFERENCES ticker (ticker_id),
+
+-- Valuation
+   pe_ratio_ttm             DOUBLE PRECISION,
+   pe_ratio_annual          DOUBLE PRECISION,
+   forward_pe               DOUBLE PRECISION,
+   price_to_book            DOUBLE PRECISION,
+   peg_ratio                DOUBLE PRECISION,
+   forward_peg_ratio        DOUBLE PRECISION,
+   ev_ebitda_ttm            DOUBLE PRECISION,
+   ev_free_cash_flow        DOUBLE PRECISION,
+   price_to_free_cash_flow  DOUBLE PRECISION,
+   enterprise_value         DOUBLE PRECISION,
+   dividend_yield           DOUBLE PRECISION,
+   dividend_per_year        DOUBLE PRECISION,
+
+-- Price metrics
+   week_high_52             DOUBLE PRECISION,
+   week_high_52_date        VARCHAR(10),
+   week_low_52              DOUBLE PRECISION,
+   week_low_52_date         VARCHAR(10),
+   beta                     DOUBLE PRECISION,
+   eps_ttm                  DOUBLE PRECISION,
+
+-- Profitability
+   gross_margin_ttm         DOUBLE PRECISION,
+   gross_margin_annual      DOUBLE PRECISION,
+   operating_margin_ttm     DOUBLE PRECISION,
+   net_profit_margin_ttm    DOUBLE PRECISION,
+   net_profit_margin_annual DOUBLE PRECISION,
+   return_on_equity         DOUBLE PRECISION,
+   return_on_assets         DOUBLE PRECISION,
+   return_on_investment     DOUBLE PRECISION,
+   payout_ratio             DOUBLE PRECISION,
+
+-- Financial health
+   current_ratio            DOUBLE PRECISION,
+   quick_ratio              DOUBLE PRECISION,
+   debt_to_equity           DOUBLE PRECISION,
+
+-- Growth
+   revenue_growth_yoy       DOUBLE PRECISION,
+   revenue_growth_3y        DOUBLE PRECISION,
+   revenue_growth_5y        DOUBLE PRECISION,
+   eps_growth_yoy           DOUBLE PRECISION,
+   eps_growth_3y            DOUBLE PRECISION,
+   eps_growth_5y            DOUBLE PRECISION,
+
+   accessed                 TIMESTAMPTZ
+);
+
 -- Saved stocks (user <-> ticker, many-to-many)
 CREATE TABLE saved_stocks (
     user_id   UUID NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
@@ -95,6 +148,5 @@ CREATE TABLE price (
     low        NUMERIC(12,4) NOT NULL,
     close      NUMERIC(12,4) NOT NULL,
     volume     BIGINT NOT NULL,
-    accessed   TIMESTAMPTZ,
     PRIMARY KEY (ticker_id, trade_date)
 );
