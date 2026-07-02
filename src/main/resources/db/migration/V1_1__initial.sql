@@ -150,3 +150,16 @@ CREATE TABLE price (
     volume     BIGINT NOT NULL,
     PRIMARY KEY (ticker_id, trade_date)
 );
+
+-- Market Holidays
+CREATE TABLE market_holiday (
+    holiday_id  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    exchange VARCHAR(20) NOT NULL,
+    holiday_date DATE NOT NULL,
+    name VARCHAR(100),
+    status VARCHAR(20) NOT NULL,
+    open_time TIMESTAMPTZ,
+    close_time TIMESTAMPTZ,
+
+    UNIQUE(exchange, holiday_date)
+);

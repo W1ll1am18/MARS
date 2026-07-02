@@ -6,6 +6,7 @@ import org.application.mars.MarketData.components.PriceWriter;
 import org.application.mars.MarketData.client.MassiveClient;
 import org.application.mars.MarketData.dtos.OHLCVBarDTO;
 import org.application.mars.MarketData.dtos.OHLCVDTO;
+import org.application.mars.MarketData.entities.MarketHolidayEntity;
 import org.application.mars.MarketData.entities.PriceEntity;
 import org.application.mars.MarketData.entities.TickerEntity;
 import org.application.mars.MarketData.entities.id.PriceId;
@@ -13,6 +14,7 @@ import org.application.mars.MarketData.models.Massive.AggregateBars.CustomBars;
 import org.application.mars.MarketData.models.Massive.AggregateBars.CustomBarsResponse;
 import org.application.mars.MarketData.models.Massive.enums.Input.Order;
 import org.application.mars.MarketData.models.Massive.enums.Input.Timespan;
+import org.application.mars.MarketData.repository.HolidayRepository;
 import org.application.mars.MarketData.repository.PriceRepository;
 import org.application.mars.MarketData.repository.TickerRepository;
 import org.springframework.stereotype.Service;
@@ -20,11 +22,13 @@ import org.springframework.stereotype.Service;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class PriceChartService {
     private final MassiveClient massiveClient;
+    private final HolidayRepository holidayRepository;
     private final TickerRepository tickerRepository;
     private final PriceRepository priceRepository;
     private final TickerService tickerService;
@@ -67,19 +71,25 @@ public class PriceChartService {
         List<CustomBars> bars;
 
         //Check if info is up to date
-        //TODO Care the closing time
         LocalDate latestDbDate = priceRepository.findLatestTradeDate(ticker);
-        boolean isStale = latestDbDate == null ||
-            (latestDbDate.isBefore(LocalDate.now()) &&
-                LocalTime.now(ZoneId.of("America/New_York")).isAfter(LocalTime.of(16, 30)));
-
-        //If stale call massive to most recent date, default to 5 years from now if no data exists
-        LocalDate resolvedTo = (to != null) ? to : LocalDate.now();
+        LocalDate resolvedTo = (to != null) ? to : getLatestTradingDay(LocalDate.now(ZoneId.of("America/New_York")));
         LocalDate resolvedFrom = (from != null) ? from : resolvedTo.minusYears(Constant.YEARS_OF_DATA);
+        LocalDate fetchFrom;
 
-        if (isStale) {
-            LocalDate fetchFrom = (latestDbDate != null && from == null) ? latestDbDate.plusDays(1) : resolvedFrom;
+        if (latestDbDate == null) {
+            //If no data present fetch from 5 years ago
+            fetchFrom = resolvedFrom;
+        }
+        else if (isStale(latestDbDate)) {
+            //If data is present and not up to do date
+            fetchFrom = latestDbDate.plusDays(1);
+        }
+        else {
+            //If data exists and up to date
+            fetchFrom = null;
+        }
 
+        if (fetchFrom != null && fetchFrom.isBefore(resolvedTo.plusDays(1))) {
             bars = getCustomBars(stocksTicker, multiplier, timeSpan, fetchFrom, resolvedTo, adjusted, order, limit);
             for (CustomBars bar : bars) {
                 priceEntities.add(mapToPrice(ticker, formatUnixToLocalDate(bar.getT()), bar));
@@ -158,6 +168,38 @@ public class PriceChartService {
         } while (nextUrl != null);
 
         return allBars;
+    }
+
+    private boolean isStale(LocalDate latestDbDate) {
+        LocalDate latestTradingDay = getLatestTradingDay(LocalDate.now(ZoneId.of("America/New_York")));
+        return latestDbDate.isBefore(latestTradingDay);
+    }
+
+    private LocalDate getLatestTradingDay(LocalDate date) {
+        ZoneId ny = ZoneId.of("America/New_York");
+        LocalTime now = LocalTime.now(ny);
+        DayOfWeek dow = date.getDayOfWeek();
+
+        if (dow == DayOfWeek.SATURDAY) {
+            return getLatestTradingDay(date.minusDays(1));
+        }
+        if (dow == DayOfWeek.SUNDAY) {
+            return getLatestTradingDay(date.minusDays(2));
+        }
+
+        Optional<MarketHolidayEntity> holiday = holidayRepository.findByHolidayDate(date);
+        if (holiday.isPresent()) {
+            if (holiday.get().getStatus() != null && "closed".equals(holiday.get().getStatus())) {
+                return getLatestTradingDay(date.minusDays(1));
+            }
+        }
+
+        boolean isToday = date.equals(LocalDate.now(ny));
+        if (isToday && now.isBefore(LocalTime.of(16, 30))) {
+            return getLatestTradingDay(date.minusDays(1));
+        }
+
+        return date;
     }
 
     private LocalDate formatUnixToLocalDate(long epochMillis) {

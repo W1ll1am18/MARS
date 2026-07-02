@@ -18,10 +18,7 @@ import org.application.mars.MarketData.models.Massive.Fundamentals.FloatResponse
 import org.application.mars.MarketData.models.Massive.Fundamentals.ShortInterestResponse;
 import org.application.mars.MarketData.models.Massive.Fundamentals.ShortVolumeResponse;
 import org.application.mars.MarketData.models.Massive.Indicators.IndicatorResponse;
-import org.application.mars.MarketData.models.Massive.Operations.ConditionCodesResponse;
-import org.application.mars.MarketData.models.Massive.Operations.ExchangesResponse;
-import org.application.mars.MarketData.models.Massive.Operations.MarketHolidaysResponse;
-import org.application.mars.MarketData.models.Massive.Operations.MarketStatusResponse;
+import org.application.mars.MarketData.models.Massive.Operations.*;
 import org.application.mars.MarketData.models.Massive.Tickers.TickerOverviewResponse;
 import org.application.mars.MarketData.models.Massive.Tickers.TickerRelatedResponse;
 import org.application.mars.MarketData.models.Massive.Tickers.TickerResponse;
@@ -60,6 +57,29 @@ public class MassiveClient {
         } catch (Exception e) {
             System.err.println("Error calling Polygon API: " + e.getMessage());
             throw new RuntimeException("Failed to fetch ", e);
+        }
+    }
+
+    private <T> T sendRequest(String url, ParameterizedTypeReference<T> responseType) {
+        log.info("Polygon request: {}", url);
+        try {
+            return webClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToMono(responseType)
+                    .block(Duration.ofSeconds(60));
+
+        } catch (WebClientResponseException.TooManyRequests e) {
+            log.error("Rate limit exceeded: {}", e.getResponseBodyAsString());
+            throw new RuntimeException("API rate limit exceeded. Please try again later");
+
+        } catch (WebClientResponseException e) {
+            log.error("API Error: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new RuntimeException("Failed to fetch: " + e.getMessage(), e);
+
+        } catch (Exception e) {
+            log.error("Error calling Polygon API: {}", e.getMessage());
+            throw new RuntimeException("Failed to fetch", e);
         }
     }
 
@@ -128,25 +148,9 @@ public class MassiveClient {
         return sendRequest(url, ExchangesResponse.class);
     }
 
-    public List<MarketHolidaysResponse> getMarketHolidays() {
+    public List<MarketHoliday> getMarketHolidays() {
         String url = "https://api.massive.com/v1/marketstatus/upcoming?apiKey=" + apiKey;
-
-        try {
-            return webClient.get()
-                    .uri(url)
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<List<MarketHolidaysResponse>>() {})
-                    .block();
-        } catch (WebClientResponseException.TooManyRequests e) {
-            System.err.println("Rate limit exceeded: " + e.getResponseBodyAsString());
-            throw new RuntimeException("API rate limit exceeded. Please try again later");
-        } catch (WebClientResponseException e) {
-            System.err.println("API Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
-            throw new RuntimeException("Failed to fetch: " + e.getMessage(), e);
-        } catch (Exception e) {
-            System.err.println("Error calling Polygon API: " + e.getMessage());
-            throw new RuntimeException("Failed to fetch", e);
-        }
+        return sendRequest(url, new ParameterizedTypeReference<List<MarketHoliday>>() {});
     }
 
     public MarketStatusResponse getMarketStatus() {

@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MarketHolidaysResponse {
+public class MarketHoliday {
     private String close;
     private String date;
     private String exchange;

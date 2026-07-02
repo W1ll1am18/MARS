@@ -2,10 +2,7 @@ package org.application.mars.MarketData.service;
 
 import lombok.RequiredArgsConstructor;
 import org.application.mars.MarketData.client.MassiveClient;
-import org.application.mars.MarketData.models.Massive.Operations.ConditionCodesResponse;
-import org.application.mars.MarketData.models.Massive.Operations.ExchangesResponse;
-import org.application.mars.MarketData.models.Massive.Operations.MarketHolidaysResponse;
-import org.application.mars.MarketData.models.Massive.Operations.MarketStatusResponse;
+import org.application.mars.MarketData.models.Massive.Operations.*;
 import org.application.mars.MarketData.models.Massive.enums.AssetClassExchange;
 import org.application.mars.MarketData.models.Massive.enums.Input.DataType;
 import org.application.mars.MarketData.models.Massive.enums.Input.Order;
@@ -29,10 +26,6 @@ public class OperationsService {
         if (locale != null) {url.append("locale=").append(locale.getValue()).append("&");}
 
         return massiveClient.getExchanges(url.toString());
-    }
-
-    public List<MarketHolidaysResponse> getMarketHolidays() {
-        return massiveClient.getMarketHolidays();
     }
 
     public MarketStatusResponse getMarketStatus() {

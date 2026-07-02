@@ -29,10 +29,10 @@ public class OperationsController {
         return ResponseEntity.ok(operationsService.getExchanges(assetClass, locale));
     }
 
-    @GetMapping("/holidays")
-    public ResponseEntity<?> getHolidays() {
-        return ResponseEntity.ok(operationsService.getMarketHolidays());
-    }
+//    @GetMapping("/holidays")
+//    public ResponseEntity<?> getHolidays() {
+//        return ResponseEntity.ok(operationsService.getMarketHolidays());
+//    }
 
     @GetMapping("/status")
     public ResponseEntity<?> getMarketStatus() {

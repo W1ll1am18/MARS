@@ -1,5 +1,3 @@
---DROP TABLE flyway_schema_history;
-
 DROP TABLE IF EXISTS price CASCADE;
 DROP TABLE IF EXISTS ticker_relation CASCADE;
 DROP TABLE IF EXISTS saved_stocks CASCADE;
@@ -10,3 +8,6 @@ DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS ticker_type CASCADE;
 DROP TABLE IF EXISTS market CASCADE;
 DROP TABLE IF EXISTS locale CASCADE;
+DROP TABLE IF EXISTS market_holiday CASCADE;
+
+--DROP TABLE flyway_schema_history;
