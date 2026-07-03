@@ -12,5 +12,6 @@ import java.util.Optional;
 public interface HolidayRepository extends JpaRepository<MarketHolidayEntity, Long> {
     @Query("SELECT MAX(h.holidayDate) FROM MarketHolidayEntity h")
     LocalDate findLatestHolidayDate();
+    Optional<MarketHolidayEntity> findByHolidayDateAndExchange(LocalDate holidayDate, String exchange);
     Optional<MarketHolidayEntity> findByHolidayDate(LocalDate date);
 }

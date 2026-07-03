@@ -50,6 +50,9 @@ public class PriceChartService {
                     .orElseThrow(() -> new IllegalArgumentException("Ticker not found: " + upperTicker));
             });
 
+        System.out.print(stocksTicker + " " + multiplier + " " + timeSpan + " " + from + " ");
+        System.out.println(to + " " + adjusted + " " + order + " " + limit + " ");
+
         LocalDate[] range = updatePrices(ticker, stocksTicker, multiplier, timeSpan, from, to, adjusted, order, limit);
         LocalDate resolvedFrom = range[0];
         LocalDate resolvedTo   = range[1];
@@ -72,7 +75,7 @@ public class PriceChartService {
 
         //Check if info is up to date
         LocalDate latestDbDate = priceRepository.findLatestTradeDate(ticker);
-        LocalDate resolvedTo = (to != null) ? to : getLatestTradingDay(LocalDate.now(ZoneId.of("America/New_York")));
+        LocalDate resolvedTo = (to != null) ? to : getLatestTradingDay(LocalDate.now(ZoneId.of("America/New_York")), ticker.getPrimaryExchange());
         LocalDate resolvedFrom = (from != null) ? from : resolvedTo.minusYears(Constant.YEARS_OF_DATA);
         LocalDate fetchFrom;
 
@@ -80,7 +83,7 @@ public class PriceChartService {
             //If no data present fetch from 5 years ago
             fetchFrom = resolvedFrom;
         }
-        else if (isStale(latestDbDate)) {
+        else if (isStale(latestDbDate, ticker.getPrimaryExchange())) {
             //If data is present and not up to do date
             fetchFrom = latestDbDate.plusDays(1);
         }
@@ -170,33 +173,33 @@ public class PriceChartService {
         return allBars;
     }
 
-    private boolean isStale(LocalDate latestDbDate) {
-        LocalDate latestTradingDay = getLatestTradingDay(LocalDate.now(ZoneId.of("America/New_York")));
+    private boolean isStale(LocalDate latestDbDate, String exchange) {
+        LocalDate latestTradingDay = getLatestTradingDay(LocalDate.now(ZoneId.of("America/New_York")), exchange);
         return latestDbDate.isBefore(latestTradingDay);
     }
 
-    private LocalDate getLatestTradingDay(LocalDate date) {
+    private LocalDate getLatestTradingDay(LocalDate date, String exchange) {
         ZoneId ny = ZoneId.of("America/New_York");
         LocalTime now = LocalTime.now(ny);
         DayOfWeek dow = date.getDayOfWeek();
 
         if (dow == DayOfWeek.SATURDAY) {
-            return getLatestTradingDay(date.minusDays(1));
+            return getLatestTradingDay(date.minusDays(1), exchange);
         }
         if (dow == DayOfWeek.SUNDAY) {
-            return getLatestTradingDay(date.minusDays(2));
+            return getLatestTradingDay(date.minusDays(2), exchange);
         }
 
-        Optional<MarketHolidayEntity> holiday = holidayRepository.findByHolidayDate(date);
+        Optional<MarketHolidayEntity> holiday = holidayRepository.findByHolidayDateAndExchange(date, exchange);
         if (holiday.isPresent()) {
             if (holiday.get().getStatus() != null && "closed".equals(holiday.get().getStatus())) {
-                return getLatestTradingDay(date.minusDays(1));
+                return getLatestTradingDay(date.minusDays(1), exchange);
             }
         }
 
         boolean isToday = date.equals(LocalDate.now(ny));
         if (isToday && now.isBefore(LocalTime.of(16, 30))) {
-            return getLatestTradingDay(date.minusDays(1));
+            return getLatestTradingDay(date.minusDays(1), exchange);
         }
 
         return date;
