@@ -136,7 +136,10 @@ CREATE TABLE saved_stocks (
 CREATE TABLE ticker_relation (
     ticker_id         BIGINT NOT NULL REFERENCES ticker (ticker_id),
     related_ticker_id BIGINT NOT NULL REFERENCES ticker (ticker_id),
-    PRIMARY KEY (ticker_id, related_ticker_id)
+    grouping          VARCHAR(20) NOT NULL,
+
+    CHECK (ticker_id < related_ticker_id),
+    PRIMARY KEY (ticker_id, related_ticker_id, grouping)
 );
 
 -- Price (daily bars only for now)

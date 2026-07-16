@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.time.Duration;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -41,12 +42,41 @@ public class FinnhubClient {
         }
     }
 
+    private <T> T sendRequest(String url, ParameterizedTypeReference<T> responseType) {
+        log.info("Finnhub request: {}", url);
+        try {
+            return webClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToMono(responseType)
+                    .block(Duration.ofSeconds(60));
+
+        } catch (WebClientResponseException.TooManyRequests e) {
+            log.error("Finnhub rate limit exceeded: {}", e.getResponseBodyAsString());
+            throw new RuntimeException("Finnhub rate limit exceeded. Please try again later.");
+
+        } catch (WebClientResponseException e) {
+            log.error("Finnhub API error: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new RuntimeException("Failed to fetch from Finnhub: " + e.getMessage(), e);
+
+        } catch (Exception e) {
+            log.error("Error calling Finnhub API: {}", e.getMessage());
+            throw new RuntimeException("Failed to fetch from Finnhub.", e);
+        }
+    }
+
     // /stock/metric?symbol=AAPL&metric=all
     // Returns P/E, P/B, 52-week high/low, margins, ROE, current ratio, beta, market cap etc.
     public BasicFinancialsResponse getBasicFinancials(String filtersUrl) {
         String url = BASE_URL + "/stock/metric?symbol=" + filtersUrl + "token=" + apiKey;
         return sendRequest(url, BasicFinancialsResponse.class);
     }
+
+    public List<String> getPeers(String filtersUrl) {
+        String url = BASE_URL + "/stock/peers?symbol=" + filtersUrl + "token=" + apiKey;
+        return sendRequest(url, new ParameterizedTypeReference<List<String>>() {});
+    }
+
 
     // /stock/profile2?symbol=AAPL
     // Returns IPO date, industry, market cap, shares outstanding, exchange, country

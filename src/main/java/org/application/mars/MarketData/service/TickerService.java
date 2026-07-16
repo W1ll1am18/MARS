@@ -22,6 +22,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import static reactor.netty.http.HttpConnectionLiveness.log;
+
 @Service
 @RequiredArgsConstructor
 public class TickerService {
@@ -30,7 +32,7 @@ public class TickerService {
     private final TickerCompanyInfoRepository tickerCompanyInfoRepository;
     private final TickerWriter tickerWriter;
 
-    public TickerResponse getTickers(String ticker, Type type, Market market, String exchange, String cusip, String cik,
+    public Optional<TickerResponse> getTickers(String ticker, Type type, Market market, String exchange, String cusip, String cik,
                                      LocalDate date, String search, Boolean active, Order order, Integer limit, Sort sort){
 
         //Care Invalid inputs.
@@ -58,12 +60,13 @@ public class TickerService {
         if (date != null) url.append("date=").append(date).append("&");
 
         TickerResponse response = massiveClient.getTickers(url.toString());
-
-        if (response.getResults() != null) {
-            response.getResults().forEach(tickerWriter::upsertTicker);
+        if (response == null || response.getResults() == null || response.getResults().isEmpty()) {
+            log.info("No MASSIVE results for ticker={}, likely out of coverage", ticker);
+            return Optional.empty();
         }
 
-        return response;
+        response.getResults().forEach(tickerWriter::upsertTicker);
+        return Optional.of(response);
     }
 
     //TickerOverviewResponse isnt necessary to return
@@ -86,6 +89,8 @@ public class TickerService {
         StringBuilder url = new StringBuilder();
         url.append(ticker.toUpperCase()).append("?");
         if (date != null) {url.append("date=").append(date).append("&");}
+
+        //TODO This should be optional
 
         TickerOverviewResponse apiResponse = massiveClient.getTicker(url.toString());
         TickerOverview response = apiResponse != null ? apiResponse.getResults() : null;

@@ -7,7 +7,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -16,6 +16,11 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+
+mars:
+  inference:
+    url: https://34-148-233-125.sslip.io
+  api-key: ${MARS_API_KEY}
 
 polygon:
   api-key: ${POLYGON_API_KEY}

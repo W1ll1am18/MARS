@@ -5,7 +5,11 @@ import org.application.mars.MarketData.dtos.TickerOverviewDTO;
 import org.application.mars.MarketData.entities.TickerEntity;
 import org.application.mars.MarketData.models.Finnhub.CompanyInfo.FinancialMetrics;
 import org.application.mars.MarketData.models.Massive.Tickers.TickerOverview;
+import org.application.mars.Prediction.models.ModelInfo;
+import org.application.mars.Prediction.models.PredictionResponse;
 import org.application.mars.MarketData.repository.TickerRepository;
+import org.application.mars.Prediction.models.PredictionResult;
+import org.application.mars.Prediction.service.PredictionsService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -14,14 +18,28 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class TickerOverviewService {
     private final TickerService tickerService;
+    private final PredictionsService predictionsService;
     private final TickerMetricsService tickerMetricsService;
     private final TickerRepository tickerRepository;
 
     public TickerOverviewDTO getTickerOverview (String ticker, LocalDate date) {
+        //When a ticker doesnt exist in the massive DB
+        //Make this optional
         TickerOverview massiveData = tickerService.getTicker(ticker, date);
         TickerEntity tickerEntity = tickerRepository.findByTicker(ticker.toUpperCase())
                 .orElseThrow(() -> new IllegalStateException("Ticker missing after overview fetch"));
         FinancialMetrics finnhubData = tickerMetricsService.getTickerMetrics(ticker, tickerEntity);
+        PredictionResponse response = predictionsService.predict(ticker, 10);
+        if (!response.getResults().isEmpty()) {
+            PredictionResult result = response.getResults().getFirst();
+            System.out.println(result);
+
+            ModelInfo modelInfo = response.getModelInfo();
+            System.out.println(modelInfo);
+        } else {
+            System.out.println("No results — check errors: " + response.getErrors());
+        }
+
         return merge(massiveData, finnhubData, tickerEntity);
     }
 

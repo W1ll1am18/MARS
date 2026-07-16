@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static reactor.netty.http.HttpConnectionLiveness.log;
+
 @Service
 @RequiredArgsConstructor
 public class PriceChartService {
@@ -34,37 +36,34 @@ public class PriceChartService {
     private final TickerService tickerService;
     private final PriceWriter priceWriter;
 
-    public OHLCVDTO getPrices (String stocksTicker, Long multiplier, Timespan timeSpan, LocalDate from,
-                               LocalDate to, Boolean adjusted, Order order, Integer limit) {
+    public Optional<OHLCVDTO> getPrices(String stocksTicker, Long multiplier, Timespan timeSpan, LocalDate from,
+                                        LocalDate to, Boolean adjusted, Order order, Integer limit) {
 
         String upperTicker = stocksTicker.toUpperCase();
 
-        //Upsert first if missing then return db data
-        //Find if ticker exists
-        TickerEntity ticker = tickerRepository.findByTicker(stocksTicker)
-            .orElseGet(() -> {
-                // ticker not cached yet — fetch it from MASSIVE first
-                tickerService.getTickers(upperTicker, null, null, null, null, null,
-                        null, null, null, null, null, null);
-                return tickerRepository.findByTicker(upperTicker)
-                    .orElseThrow(() -> new IllegalArgumentException("Ticker not found: " + upperTicker));
-            });
+        Optional<TickerEntity> maybeTicker = tickerRepository.findByTicker(stocksTicker);
+        if (maybeTicker.isEmpty()) {
+            if (tickerService.getTickers(upperTicker, null, null, null, null, null,
+                    null, null, null, null, null, null).isEmpty()) {
+                log.info("Ticker not found in MASSIVE, skipping: {}", upperTicker);
+                return Optional.empty();
+            }
+            maybeTicker = tickerRepository.findByTicker(upperTicker);
+        }
 
-        System.out.print(stocksTicker + " " + multiplier + " " + timeSpan + " " + from + " ");
-        System.out.println(to + " " + adjusted + " " + order + " " + limit + " ");
+        TickerEntity ticker = maybeTicker.orElseThrow(() ->
+                new IllegalStateException("Ticker fetched from MASSIVE but missing from DB: " + upperTicker));
 
         LocalDate[] range = updatePrices(ticker, stocksTicker, multiplier, timeSpan, from, to, adjusted, order, limit);
         LocalDate resolvedFrom = range[0];
-        LocalDate resolvedTo   = range[1];
+        LocalDate resolvedTo = range[1];
 
         List<PriceEntity> prices = priceRepository.findPricesInRange(ticker.getTickerId(), resolvedFrom, resolvedTo);
-
-        //TODO for now this will be the max
         List<PriceEntity> limited = (limit != null && limit < prices.size())
-                ? prices.subList(prices.size() - limit, prices.size()) // most recent N bars
+                ? prices.subList(prices.size() - limit, prices.size())
                 : prices;
 
-        return getOhlcvdto(limited);
+        return Optional.of(getOhlcvdto(limited));
     }
 
     private LocalDate[] updatePrices(TickerEntity ticker, String stocksTicker, Long multiplier, Timespan timeSpan, LocalDate from,
