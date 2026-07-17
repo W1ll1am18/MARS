@@ -16,6 +16,7 @@ import org.application.mars.MarketData.models.Massive.enums.AssetClass;
 import org.application.mars.MarketData.repository.TickerCompanyInfoRepository;
 import org.application.mars.MarketData.repository.TickerRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -70,7 +71,7 @@ public class TickerService {
     }
 
     //TickerOverviewResponse isnt necessary to return
-    public TickerOverview getTicker(String ticker, LocalDate date) {
+    public Optional<TickerOverview> getTicker(String ticker, LocalDate date) {
         String upperTicker = ticker.toUpperCase();
         Optional<TickerEntity> cachedTicker = tickerRepository.findByTicker(upperTicker);
 
@@ -82,7 +83,7 @@ public class TickerService {
             boolean infoFresh = cachedInfo.isPresent() && !Constant.isStale(cachedInfo.get().getAccessed());
 
             if (tickerFresh && infoFresh) {
-                return mapToOverview(tickerEntity, cachedInfo.get()); // full DB hit
+                return Optional.of(mapToOverview(tickerEntity, cachedInfo.get())); // full DB hit
             }
         }
 
@@ -90,17 +91,24 @@ public class TickerService {
         url.append(ticker.toUpperCase()).append("?");
         if (date != null) {url.append("date=").append(date).append("&");}
 
-        //TODO This should be optional
+        //This try catch block is used specifically for the one instance where
+        //a user tries to search up a ticker that doesn't exist within MASSIVE
+        //Otherwise we have to refactor the whole app to use Optional
+        try {
+            TickerOverviewResponse apiResponse = massiveClient.getTicker(url.toString());
+            TickerOverview response = apiResponse != null ? apiResponse.getResults() : null;
 
-        TickerOverviewResponse apiResponse = massiveClient.getTicker(url.toString());
-        TickerOverview response = apiResponse != null ? apiResponse.getResults() : null;
+            if (response == null) {
+                throw new NullPointerException(upperTicker);
+            }
 
-        if (response == null) {
-            throw new NullPointerException(upperTicker);
+            tickerWriter.upsertTickerOverview(response);
+            return Optional.of(response);
         }
-
-        tickerWriter.upsertTickerOverview(response);
-        return response;
+        catch (WebClientResponseException.NotFound e) {
+            log.info("Ticker not found: {}", ticker);
+            return Optional.empty();
+        }
     }
 
     public TickerTypeResponse getTickerTypes(AssetClass assetClass, Locale locale) {

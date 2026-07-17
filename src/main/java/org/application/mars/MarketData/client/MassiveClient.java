@@ -32,6 +32,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -47,15 +48,19 @@ public class MassiveClient {
             return webClient.get().uri(url).retrieve().bodyToMono(responseType).block(Duration.ofSeconds(60));
 
         } catch (WebClientResponseException.TooManyRequests e) {
-            System.err.println("Rate limit exceeded" + e.getResponseBodyAsString());
+            log.error("Rate limit exceeded" + e.getResponseBodyAsString());
             throw new RuntimeException("API rate limit exceeded. Please try again later");
 
+        } catch (WebClientResponseException.NotFound e) {
+            log.error("Not found for url: {}", url);
+            throw e;
+
         } catch (WebClientResponseException e) {
-            System.err.println("API Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
+            log.error("API Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
             throw new RuntimeException("Failed to fetch: " + e.getMessage(), e);
 
         } catch (Exception e) {
-            System.err.println("Error calling Polygon API: " + e.getMessage());
+            log.error("Error calling Polygon API: " + e.getMessage());
             throw new RuntimeException("Failed to fetch ", e);
         }
     }

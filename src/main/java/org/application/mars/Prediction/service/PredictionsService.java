@@ -6,12 +6,10 @@ import org.application.mars.MarketData.dtos.OHLCVDTO;
 import org.application.mars.MarketData.entities.TickerEntity;
 import org.application.mars.MarketData.models.Massive.enums.Input.Timespan;
 import org.application.mars.Prediction.client.MarsInferenceClient;
-import org.application.mars.Prediction.models.PredictionResponse;
+import org.application.mars.Prediction.models.*;
 import org.application.mars.MarketData.repository.TickerRepository;
 import org.application.mars.MarketData.service.PeerService;
 import org.application.mars.MarketData.service.PriceChartService;
-import org.application.mars.Prediction.models.BarRequest;
-import org.application.mars.Prediction.models.PredictionRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -71,7 +69,18 @@ public class PredictionsService {
         predictionRequest.setBars(bars);
         predictionRequest.setVooBars(vooBars);
 
-        return marsInferenceClient.predict(predictionRequest);
+        PredictionResponse response = marsInferenceClient.predict(predictionRequest);
+        if (!response.getResults().isEmpty()) {
+            PredictionResult result = response.getResults().getFirst();
+            System.out.println(result);
+
+            ModelInfo modelInfo = response.getModelInfo();
+            System.out.println(modelInfo);
+        } else {
+            System.out.println("No results — check errors: " + response.getErrors());
+        }
+
+        return response;
     }
 
     private List<BarRequest> formatToBarDTO(OHLCVDTO ohlcvdto, TickerEntity tickerEntity) {

@@ -1,14 +1,13 @@
 package org.application.mars.MarketData.service;
 
 import lombok.RequiredArgsConstructor;
+import org.application.mars.MarketData.exceptionHandler.TickerNotFoundException;
 import org.application.mars.MarketData.dtos.TickerOverviewDTO;
 import org.application.mars.MarketData.entities.TickerEntity;
 import org.application.mars.MarketData.models.Finnhub.CompanyInfo.FinancialMetrics;
 import org.application.mars.MarketData.models.Massive.Tickers.TickerOverview;
-import org.application.mars.Prediction.models.ModelInfo;
 import org.application.mars.Prediction.models.PredictionResponse;
 import org.application.mars.MarketData.repository.TickerRepository;
-import org.application.mars.Prediction.models.PredictionResult;
 import org.application.mars.Prediction.service.PredictionsService;
 import org.springframework.stereotype.Service;
 
@@ -23,22 +22,18 @@ public class TickerOverviewService {
     private final TickerRepository tickerRepository;
 
     public TickerOverviewDTO getTickerOverview (String ticker, LocalDate date) {
-        //When a ticker doesnt exist in the massive DB
+        //When a ticker doesn't exist in the massive DB
         //Make this optional
-        TickerOverview massiveData = tickerService.getTicker(ticker, date);
-        TickerEntity tickerEntity = tickerRepository.findByTicker(ticker.toUpperCase())
-                .orElseThrow(() -> new IllegalStateException("Ticker missing after overview fetch"));
-        FinancialMetrics finnhubData = tickerMetricsService.getTickerMetrics(ticker, tickerEntity);
-        PredictionResponse response = predictionsService.predict(ticker, 10);
-        if (!response.getResults().isEmpty()) {
-            PredictionResult result = response.getResults().getFirst();
-            System.out.println(result);
+        String upperTicker = ticker.toUpperCase();
 
-            ModelInfo modelInfo = response.getModelInfo();
-            System.out.println(modelInfo);
-        } else {
-            System.out.println("No results — check errors: " + response.getErrors());
-        }
+        TickerOverview massiveData = tickerService.getTicker(upperTicker, date)
+                .orElseThrow(() -> new TickerNotFoundException(ticker));
+
+        TickerEntity tickerEntity = tickerRepository.findByTicker(upperTicker)
+                .orElseThrow(() -> new IllegalStateException("Ticker missing after overview fetch"));
+
+        FinancialMetrics finnhubData = tickerMetricsService.getTickerMetrics(upperTicker, tickerEntity);
+        PredictionResponse response = predictionsService.predict(upperTicker, 10);
 
         return merge(massiveData, finnhubData, tickerEntity);
     }
