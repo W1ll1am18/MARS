@@ -13,7 +13,7 @@ public class CustomBars {
     private BigDecimal l;
     private Long n;
     private BigDecimal o;
-    private Long otc;
+    private Boolean otc;
     private Long t;
     private Long v;
     private Long vw;

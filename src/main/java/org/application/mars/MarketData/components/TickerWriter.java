@@ -32,7 +32,11 @@ public class TickerWriter {
     // NO @Transactional here, the method itself must not own a transaction
     // so that when TickerSaver's inner transaction fails and rolls back,
     // this method's context is completely clean for the retry
-    public TickerEntity upsertTicker(Ticker ticker) {
+    public Optional<TickerEntity> upsertTicker(Ticker ticker) {
+        if (isInvalid(ticker)) {
+            return Optional.empty();
+        }
+
         TickerEntity entity = buildEntity(ticker, findExisting(
                 ticker.getCompositeFigi(),
                 ticker.getTicker(),
@@ -60,7 +64,12 @@ public class TickerWriter {
 
     @Transactional
     public void upsertTickerOverview(TickerOverview overview) {
-        TickerEntity tickerEntity = upsertTicker(overview);
+        Optional<TickerEntity> result = upsertTicker(overview);
+        if (result.isEmpty()) {
+            return;
+        }
+
+        TickerEntity tickerEntity = result.get();
 
         TickerCompanyInfoEntity infoEntity = tickerCompanyInfoRepository
                 .findById(tickerEntity.getTickerId())
@@ -190,5 +199,10 @@ public class TickerWriter {
         if (isoDate == null || isoDate.isBlank()) return null;
         try { return LocalDate.parse(isoDate); }
         catch (DateTimeParseException e) { return null; }
+    }
+
+    private boolean isInvalid(Ticker t) {
+        return t.getName() == null || t.getTicker() == null
+                || t.getName().isEmpty() || t.getTicker().isEmpty();
     }
 }

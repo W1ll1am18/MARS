@@ -3,10 +3,12 @@ package org.application.mars.MarketData.models.Massive.Tickers;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.application.mars.MarketData.models.Objects.Address;
 import org.application.mars.MarketData.models.Objects.Branding;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TickerOverview extends Ticker {
 

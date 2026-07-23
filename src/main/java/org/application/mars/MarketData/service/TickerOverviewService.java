@@ -5,6 +5,7 @@ import org.application.mars.MarketData.exceptionHandler.TickerNotFoundException;
 import org.application.mars.MarketData.dtos.TickerOverviewDTO;
 import org.application.mars.MarketData.entities.TickerEntity;
 import org.application.mars.MarketData.models.Finnhub.CompanyInfo.FinancialMetrics;
+import org.application.mars.MarketData.models.Finnhub.CompanyInfo.Sector;
 import org.application.mars.MarketData.models.Massive.Tickers.TickerOverview;
 import org.application.mars.Prediction.models.PredictionResponse;
 import org.application.mars.MarketData.repository.TickerRepository;
@@ -30,11 +31,11 @@ public class TickerOverviewService {
                 .orElseThrow(() -> new TickerNotFoundException(ticker));
 
         TickerEntity tickerEntity = tickerRepository.findByTicker(upperTicker)
-                .orElseThrow(() -> new IllegalStateException("Ticker missing after overview fetch"));
+                .orElseThrow(() -> new TickerNotFoundException(ticker));
 
         FinancialMetrics finnhubData = tickerMetricsService.getTickerMetrics(upperTicker, tickerEntity);
-        PredictionResponse response = predictionsService.predict(upperTicker, 10);
 
+        //NOTE THIS SHOULD EXECUTE BEFORE ML PART
         return merge(massiveData, finnhubData, tickerEntity);
     }
 

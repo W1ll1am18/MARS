@@ -40,7 +40,7 @@ CREATE TABLE ticker (
     name                 VARCHAR(255) NOT NULL,
     primary_exchange     VARCHAR(50),
     share_class_figi     VARCHAR(50),
-    ticker               VARCHAR(10) NOT NULL,
+    ticker               VARCHAR(20) NOT NULL,
     type                 VARCHAR(20) REFERENCES ticker_type (code),
     accessed             TIMESTAMPTZ
 );

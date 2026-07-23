@@ -100,6 +100,8 @@ public class TickerMetricsService {
     // Only fetch metrics for equity types. Finnhub returns nothing useful for ETFs, indices, etc.
     private boolean isEquity(TickerEntity tickerEntity) {
         String type = tickerEntity.getType();
-        return type == null || type.equals("CS") || type.equals("ADRC") || type.equals("ADRP") || type.equals("ADRR");
+        return type == null || type.equals("CS") || type.equals("ADRC")
+                || type.equals("ADRP") || type.equals("ADRR") || type.equals("ADRW")
+                || type.equals("GDR") || type.equals("PFD") || type.equals("UNIT");
     }
 }

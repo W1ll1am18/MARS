@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.application.mars.MarketData.dtos.OHLCVBarDTO;
 import org.application.mars.MarketData.dtos.OHLCVDTO;
 import org.application.mars.MarketData.entities.TickerEntity;
+import org.application.mars.MarketData.exceptionHandler.InsufficientPredictionDataException;
 import org.application.mars.MarketData.models.Massive.enums.Input.Timespan;
 import org.application.mars.Prediction.client.MarsInferenceClient;
 import org.application.mars.Prediction.models.*;
@@ -34,16 +35,24 @@ public class PredictionsService {
             throw new NullPointerException("Ticker or horizon is null");
         }
 
-        ticker.toUpperCase();
-        //Get peers and their price data, placeholder industry
+        //Get peers and their price data, placeholder industry, this actually returns the company itself in there. Not guaranteed to contain something.
         List<String> peers = peerService.getPeers(ticker, "industry");
         List<BarRequest> bars = new ArrayList<>();
         List<BarRequest> vooBars = new ArrayList<>();
-        Map<Long, String> sectors = new HashMap<>();
+        Map<Long, String> tickers = new HashMap<>();
+
+        Optional<TickerEntity> requestedTickerEntity = tickerRepository.findByTicker(ticker.toUpperCase());
+        if (requestedTickerEntity.isEmpty()) {
+            throw new InsufficientPredictionDataException(ticker, "Requested ticker not found");
+        }
+
+        if (peers.isEmpty()) {
+            peers.add(ticker.toUpperCase());
+        }
 
         //bars and sectors
         for (String peer : peers) {
-            //Will implicity create a ticker that doesnt exist yet
+            //Will implicity create a ticker that doesn't exist yet
 
             //CARE if you do decide to implement different multipliers
 
@@ -51,8 +60,12 @@ public class PredictionsService {
             Optional<TickerEntity> tickerEntity = tickerRepository.findByTicker(peer);
             if (ohlcvdto.isPresent() && tickerEntity.isPresent()) {
                 bars.addAll(formatToBarDTO(ohlcvdto.orElse(null), tickerEntity.get()));
-                sectors.put(tickerEntity.get().getTickerId(), "Technology");
+                tickers.put(tickerEntity.get().getTickerId(), tickerEntity.get().getTicker());
             }
+        }
+
+        if (bars.isEmpty()) {
+            throw new InsufficientPredictionDataException(ticker);
         }
 
         //voo_bars
@@ -62,22 +75,29 @@ public class PredictionsService {
             vooBars = formatToBarDTO(ohlcvdto.orElse(null), voo.get());
         }
 
+        if (vooBars.isEmpty()) {
+            throw new InsufficientPredictionDataException(ticker, "VOO benchmark data unavailable");
+        }
+
         //Send request to mars-ml
         PredictionRequest predictionRequest = new PredictionRequest();
         predictionRequest.setHorizon(horizon);
-        predictionRequest.setSectors(sectors);
+        predictionRequest.setTickers(tickers);
         predictionRequest.setBars(bars);
         predictionRequest.setVooBars(vooBars);
 
+        Long requestedTickerId = requestedTickerEntity.get().getTickerId();
         PredictionResponse response = marsInferenceClient.predict(predictionRequest);
-        if (!response.getResults().isEmpty()) {
-            PredictionResult result = response.getResults().getFirst();
-            System.out.println(result);
 
-            ModelInfo modelInfo = response.getModelInfo();
-            System.out.println(modelInfo);
-        } else {
-            System.out.println("No results — check errors: " + response.getErrors());
+        if (response != null) {
+            PredictionResult result = response.getResults().stream()
+                .filter(r -> r.getTickerId() != null && r.getTickerId().longValue() == requestedTickerId)
+                .findFirst()
+                .orElseThrow(() -> new InsufficientPredictionDataException(
+                        ticker, "No prediction result returned for this ticker — check errors: " + response.getErrors()
+                ));
+
+            response.clearResultsAndAdd(result);
         }
 
         return response;

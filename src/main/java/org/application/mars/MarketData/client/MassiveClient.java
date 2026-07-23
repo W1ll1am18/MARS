@@ -2,6 +2,7 @@ package org.application.mars.MarketData.client;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.application.mars.MarketData.exceptionHandler.ExternalDataUnavailableException;
 import org.application.mars.MarketData.models.Disclosures.IndexResponse;
 import org.application.mars.MarketData.models.Disclosures.RiskCategoriesResponse;
 import org.application.mars.MarketData.models.Disclosures.RiskFactorsResponse;
@@ -32,7 +33,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Component
@@ -45,8 +46,16 @@ public class MassiveClient {
     private <T> T sendRequest(String url, Class<T> responseType) {
         log.info("Polygon request: {}", url);
         try {
-            return webClient.get().uri(url).retrieve().bodyToMono(responseType).block(Duration.ofSeconds(60));
-
+            return webClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToMono(responseType)
+                    .timeout(Duration.ofSeconds(60))
+                    .onErrorMap(TimeoutException.class, e -> {
+                        log.warn("Timeout fetching from Massive", e);
+                        return new ExternalDataUnavailableException("Massive", e);
+                    })
+                    .block();
         } catch (WebClientResponseException.TooManyRequests e) {
             log.error("Rate limit exceeded" + e.getResponseBodyAsString());
             throw new RuntimeException("API rate limit exceeded. Please try again later");
@@ -59,7 +68,7 @@ public class MassiveClient {
             log.error("API Error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
             throw new RuntimeException("Failed to fetch: " + e.getMessage(), e);
 
-        } catch (Exception e) {
+        }catch (Exception e) {
             log.error("Error calling Polygon API: " + e.getMessage());
             throw new RuntimeException("Failed to fetch ", e);
         }
@@ -72,7 +81,12 @@ public class MassiveClient {
                     .uri(url)
                     .retrieve()
                     .bodyToMono(responseType)
-                    .block(Duration.ofSeconds(60));
+                    .timeout(Duration.ofSeconds(60))
+                    .onErrorMap(TimeoutException.class, e -> {
+                        log.warn("Timeout fetching from Massive", e);
+                        return new ExternalDataUnavailableException("Massive", e);
+                    })
+                    .block();
 
         } catch (WebClientResponseException.TooManyRequests e) {
             log.error("Rate limit exceeded: {}", e.getResponseBodyAsString());
@@ -155,7 +169,7 @@ public class MassiveClient {
 
     public List<MarketHoliday> getMarketHolidays() {
         String url = "https://api.massive.com/v1/marketstatus/upcoming?apiKey=" + apiKey;
-        return sendRequest(url, new ParameterizedTypeReference<List<MarketHoliday>>() {});
+        return sendRequest(url, new ParameterizedTypeReference<>(){});
     }
 
     public MarketStatusResponse getMarketStatus() {

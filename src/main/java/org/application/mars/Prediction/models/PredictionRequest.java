@@ -11,7 +11,7 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PredictionRequest {
     private Integer horizon;
-    private Map<Long, String> sectors;
+    private Map<Long, String> tickers;
     private List<BarRequest> bars;
     @JsonProperty("voo_bars")
     private List<BarRequest> vooBars;
